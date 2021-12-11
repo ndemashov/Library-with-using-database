@@ -54,7 +54,7 @@ class Main(tk.Frame):
 
     def conn(self, name):
         self.db.connect(name)
-
+        
     def create_db(self):
         Create_db()
 
@@ -67,13 +67,11 @@ class Main(tk.Frame):
     def connect(self):
         Connect()
 
-
 class Template(tk.Toplevel):
-    def __init__(self):
+     def __init__(self):
         super().__init__(root)
         self.init_template()
-
-    def init_template(self):
+     def init_template(self):
         self.geometry('400x220+400+300')
         self.resizable(False, False)
 
@@ -81,8 +79,7 @@ class Template(tk.Toplevel):
         btn_close.place(x=300, y=170)
 
         self.grab_set()
-        self.focus_set()
-
+        self.focus_set()         
 
 class Create_db(Template):
     def __init__(self):
@@ -104,7 +101,6 @@ class Create_db(Template):
         btn_create.bind('<Button-1>', lambda event: self.view.add_db(
             self.entry_name.get()))
 
-
 class Delete_db(Template):
     def __init__(self):
         super().__init__()
@@ -124,6 +120,53 @@ class Delete_db(Template):
         btn_delete.place(x=220, y=170)
         btn_delete.bind('<Button-1>', lambda event: self.view.del_db(
             self.entry_name.get()))
+
+class DB:
+    def __init__(self):
+        self.con = psycopg2.connect( 
+            user="postgres", 
+            password="123", 
+            host="127.0.0.1", 
+            port="5432"
+        )
+        self.cur = self.con.cursor()
+    def create_db(self, name):
+        self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        query = "create database "+name+";"
+        self.cur.execute(query)
+        print("Created")
+        self.con.commit()
+
+    def delete_db(self, name):
+        self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        query = "drop database "+name+";"
+        self.cur.execute(query)
+        print("Deleted")
+        self.con.commit()
+        
+    def connect(self, name):
+        self.con = psycopg2.connect( 
+            user="postgres",
+            database=name, 
+            password="123", 
+            host="127.0.0.1", 
+            port="5432"
+        )
+        print("Connected")
+        self.cur = self.con.cursor()
+    def close(self):
+        con.close()
+        
+    def create_table(self, name, structure):
+        label_name = tk.Label(self, text='Name:')
+        label_name.place(x=50, y=50)
+        label_structure = tk.Label(self, text='Structure:')
+        label_structure.place(x=50, y=50)
+        
+    def insert_data(self, description, costs, total):
+        self.c.execute('''INSERT INTO finance(description, costs, total) VALUES (?, ?, ?)''',
+                       (description, costs, total))
+        self.conn.commit()
 
 class Create_table(Template):
     def __init__(self):
