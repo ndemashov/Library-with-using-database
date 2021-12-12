@@ -217,7 +217,7 @@ class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="22001",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )
