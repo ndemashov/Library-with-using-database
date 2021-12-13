@@ -26,7 +26,7 @@ class Main(tk.Frame):
                                 compound=tk.TOP)
         btn_connect.pack(side=tk.LEFT)
 
-        btn_ct = tk.Button(toolbar, text='Create table', command=self.create_table, bg='#d7d8e0', bd=0,
+        btn_ct = tk.Button(toolbar, text='Create library tables', command=self.create_library_tables, bg='#d7d8e0', bd=0,
                                   compound=tk.TOP)
         btn_ct.pack(side=tk.LEFT)
 
@@ -41,9 +41,6 @@ class Main(tk.Frame):
     def del_db(self, name):
         self.db.delete_db(name)
 
-    def cr_tb(self, name, structure):
-        self.db.create_table(name, structure)
-
     def conn(self, name):
         self.db.connect(name)
 
@@ -56,8 +53,9 @@ class Main(tk.Frame):
     def delete_db(self):
         Delete_db()
 
-    def create_table(self):
-        Create_table()
+    def create_library_tables(self):
+        self.db.create_table()
+
 
     def connect(self):
         Connect()
@@ -78,7 +76,6 @@ class Template(tk.Toplevel):
 
         self.grab_set()
         self.focus_set()         
-
 
 class Create_db(Template):
     def __init__(self):
@@ -139,31 +136,6 @@ class Connect(Template):
         btn_connect.place(x=220, y=170)
         btn_connect.bind('<Button-1>', lambda event: self.view.conn(
             self.entry_name.get()))
-
-class Create_table(Template):
-    def __init__(self):
-        super().__init__()
-        self.init_create_table()
-        self.view = app
-
-    def init_create_table(self):
-        self.title('Create table')
-
-        label_name = tk.Label(self, text='Name:')
-        label_name.place(x=50, y=20)
-        label_structure = tk.Label(self, text='Structure:')
-        label_structure.place(x=50, y=70)
-
-        self.entry_name = ttk.Entry(self)
-        self.entry_name.place(x=200, y=20)
-
-        self.entry_structure = ttk.Entry(self)
-        self.entry_structure.place(x=200, y=70)
-
-        btn_ct = ttk.Button(self, text='Create button')
-        btn_ct.place(x=220, y=170)
-        btn_ct.bind('<Button-1>', lambda event: self.view.cr_tb(
-            self.entry_name.get(), self.entry_structure.get(),))
 
 class Add_book(Template):
     def __init__(self):
@@ -252,11 +224,9 @@ class DB:
     def close(self):
         self.con.close()
 
-    def create_table(self, name, structure):
-        self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        query = "create table " + name + "(" + str(structure) + ");"
-        self.cur.execute(query)
-        print("Table created")
+    def create_table(self):
+        self.cur.execute("CALL create_tables()")
+        print("CREATED!")
         self.con.commit()
 
     def query_add_book(self, title, writing_year, author_name, author_surname, num_book):
