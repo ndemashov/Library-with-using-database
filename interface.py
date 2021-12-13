@@ -8,7 +8,6 @@ class Main(tk.Frame):
     def __init__(self, root):
         super().__init__(root)
         self.init_main()
-        self.db = db
 
     def init_main(self):
         toolbar = tk.Frame(bg='#d7d8e0', bd=2)
@@ -29,31 +28,10 @@ class Main(tk.Frame):
         btn_connect = tk.Button(toolbar, text='Connect', command=self.connect, bg='#d7d8e0', bd=0,
                            compound=tk.TOP)
         btn_connect.pack(side=tk.LEFT)
-        '''
-        self.tree = ttk.Treeview(self, columns=('ID', 'description', 'costs', 'total'),
-                                 height=15, show='headings')
-        self.tree.column("ID", width=30, anchor=tk.CENTER)
-        self.tree.column("description", width=365, anchor=tk.CENTER)
-        self.tree.column("costs", width=150, anchor=tk.CENTER)
-        self.tree.column("total", width=100, anchor=tk.CENTER)
-        self.tree.heading("ID", text='ID')
-        self.tree.heading("description", text='Наименование')
-        self.tree.heading("costs", text='Статья дохода/расхода')
-        self.tree.heading("total", text='Сумма')
-        self.tree.pack()
-        '''
 
-    def add_db(self, name):
-        self.db.create_db(name)
-
-    def del_db(self, name):
-        self.db.delete_db(name)
-
-    def cr_tb(self, name, structure):
-        self.db.create_table(name, structure)
-
-    def conn(self, name):
-        self.db.connect(name)
+        btn_connect = tk.Button(toolbar, text='Print table', command=self.print_table, bg='#d7d8e0', bd=0,
+                           compound=tk.TOP)
+        btn_connect.pack(side=tk.LEFT)
         
     def create_db(self):
         Create_db()
@@ -67,10 +45,14 @@ class Main(tk.Frame):
     def connect(self):
         Connect()
 
+    def print_table(self):
+        Print_table()
+
 class Template(tk.Toplevel):
      def __init__(self):
         super().__init__(root)
         self.init_template()
+        self.db = db
      def init_template(self):
         self.geometry('400x220+400+300')
         self.resizable(False, False)
@@ -85,8 +67,7 @@ class Create_db(Template):
     def __init__(self):
         super().__init__()
         self.init_create_db()
-        self.view = app
-
+        
     def init_create_db(self):
         self.title('Create database')
 
@@ -98,14 +79,16 @@ class Create_db(Template):
 
         btn_create = ttk.Button(self, text='Create')
         btn_create.place(x=220, y=170)
-        btn_create.bind('<Button-1>', lambda event: self.view.add_db(
+        btn_create.bind('<Button-1>', lambda event: self.add_db(
             self.entry_name.get()))
+        
+    def add_db(self, name):
+        self.db.create_db(name)
 
 class Delete_db(Template):
     def __init__(self):
         super().__init__()
         self.init_delete_db()
-        self.view = app
 
     def init_delete_db(self):
         self.title('Delete database')
@@ -118,61 +101,16 @@ class Delete_db(Template):
 
         btn_delete = ttk.Button(self, text='Delete')
         btn_delete.place(x=220, y=170)
-        btn_delete.bind('<Button-1>', lambda event: self.view.del_db(
+        btn_delete.bind('<Button-1>', lambda event: self.del_db(
             self.entry_name.get()))
 
-class DB:
-    def __init__(self):
-        self.con = psycopg2.connect( 
-            user="postgres", 
-            password="123", 
-            host="127.0.0.1", 
-            port="5432"
-        )
-        self.cur = self.con.cursor()
-    def create_db(self, name):
-        self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        query = "create database "+name+";"
-        self.cur.execute(query)
-        print("Created")
-        self.con.commit()
-
-    def delete_db(self, name):
-        self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        query = "drop database "+name+";"
-        self.cur.execute(query)
-        print("Deleted")
-        self.con.commit()
-        
-    def connect(self, name):
-        self.con = psycopg2.connect( 
-            user="postgres",
-            database=name, 
-            password="123", 
-            host="127.0.0.1", 
-            port="5432"
-        )
-        print("Connected")
-        self.cur = self.con.cursor()
-    def close(self):
-        con.close()
-        
-    def create_table(self, name, structure):
-        label_name = tk.Label(self, text='Name:')
-        label_name.place(x=50, y=50)
-        label_structure = tk.Label(self, text='Structure:')
-        label_structure.place(x=50, y=50)
-        
-    def insert_data(self, description, costs, total):
-        self.c.execute('''INSERT INTO finance(description, costs, total) VALUES (?, ?, ?)''',
-                       (description, costs, total))
-        self.conn.commit()
+    def del_db(self, name):
+        self.db.delete_db(name)
 
 class Create_table(Template):
     def __init__(self):
         super().__init__()
         self.init_create_table()
-        self.view = app
 
     def init_create_table(self):
         self.title('Create table')
@@ -190,17 +128,19 @@ class Create_table(Template):
 
         btn_ct = ttk.Button(self, text='Create button')
         btn_ct.place(x=220, y=170)
-        btn_ct.bind('<Button-1>', lambda event: self.view.cr_tb(
+        btn_ct.bind('<Button-1>', lambda event: self.cr_tb(
             self.entry_name.get(), self.entry_structure.get(),))
+
+    def cr_tb(self, name, structure):
+        self.db.create_table(name, structure)
 
 class Connect(Template):
     def __init__(self):
         super().__init__()
         self.init_create_table()
-        self.view = app
 
     def init_create_table(self):
-        self.title('Create table')
+        self.title('Connect')
 
         label_name = tk.Label(self, text='Name:')
         label_name.place(x=50, y=20)
@@ -210,14 +150,52 @@ class Connect(Template):
 
         btn_connect = ttk.Button(self, text='Connect with db')
         btn_connect.place(x=220, y=170)
-        btn_connect.bind('<Button-1>', lambda event: self.view.conn(
+        btn_connect.bind('<Button-1>', lambda event: self.conn(
             self.entry_name.get()))
+
+    def conn(self, name):
+        self.db.connect(name)
+
+class Print_table(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_print_table()
+
+    def init_print_table(self):
+        self.title('Print table')
+
+        label_name = tk.Label(self, text='Name:')
+        label_name.place(x=50, y=20)
+
+        self.entry_name = ttk.Entry(self)
+        self.entry_name.place(x=100, y=20)
+
+        btn_connect = ttk.Button(self, text='Print')
+        btn_connect.place(x=220, y=170)
+        btn_connect.bind('<Button-1>', lambda event: self.conn(
+            self.entry_name.get()))
+        '''
+        self.tree = ttk.Treeview(self, columns=('ID', 'description', 'costs', 'total'),
+                                 height=15, show='headings')
+        self.tree.column("ID", width=3, anchor=tk.CENTER)
+        self.tree.column("description", width=365, anchor=tk.CENTER)
+        self.tree.column("costs", width=150, anchor=tk.CENTER)
+        self.tree.column("total", width=100, anchor=tk.CENTER)
+        self.tree.heading("ID", text='ID')
+        self.tree.heading("description", text='Наименование')
+        self.tree.heading("costs", text='Статья дохода/расхода')
+        self.tree.heading("total", text='Сумма')
+        self.tree.pack()
+        '''
+
+    def conn(self, name):
+        self.db.connect(name)
 
 class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="22001",
+            password="123",
             host="127.0.0.1",
             port="5432"
         )
@@ -239,9 +217,9 @@ class DB:
 
     def connect(self, name):
         self.con = psycopg2.connect(
-            user="postgres",
+            user="pupil",
             database=name,
-            password="22001",
+            password="4321",
             host="127.0.0.1",
             port="5432"
         )
@@ -258,18 +236,7 @@ class DB:
         print("Table created")
         self.con.commit()
 
-    def insert_data(self, description, costs, total):
-        self.c.execute('''INSERT INTO finance(description, costs, total) VALUES (?, ?, ?)''',
-                       (description, costs, total))
-        self.conn.commit()
-
-
 if __name__ == "__main__":
-    '''con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cur = con.cursor()
-    sqlCreateDatabase = "create database Library;"
-    cur.execute(sqlCreateDatabase)
-    con.commit() '''
     root = tk.Tk()
     db = DB()
     app = Main(root)
