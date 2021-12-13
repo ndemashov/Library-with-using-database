@@ -26,9 +26,14 @@ class Main(tk.Frame):
                                 compound=tk.TOP)
         btn_connect.pack(side=tk.LEFT)
 
-        btn_ct = tk.Button(toolbar, text='Create library tables', command=self.create_library_tables, bg='#d7d8e0', bd=0,
+        btn_clt = tk.Button(toolbar, text='Create library tables', command=self.create_library_tables, bg='#d7d8e0', bd=0,
                                   compound=tk.TOP)
-        btn_ct.pack(side=tk.LEFT)
+        btn_clt.pack(side=tk.LEFT)
+
+        btn_at = tk.Button(toolbar, text='Add table', command=self.add_table, bg='#d7d8e0',
+                           bd=0,
+                           compound=tk.TOP)
+        btn_at.pack(side=tk.LEFT)
 
         btn_add_book = tk.Button(toolbar, text='Add book', command=self.add_book, bg='#d7d8e0', bd=0,
                                   compound=tk.TOP)
@@ -44,6 +49,9 @@ class Main(tk.Frame):
     def conn(self, name):
         self.db.connect(name)
 
+    def add_tb(self, name, structure):
+        self.db.add_table(name, structure)
+
     def add_b(self, title, writing_year, author_name, author_surname, num_book):
         self.db.query_add_book(title, writing_year, author_name, author_surname, num_book)
         
@@ -56,6 +64,8 @@ class Main(tk.Frame):
     def create_library_tables(self):
         self.db.create_table()
 
+    def add_table(self):
+        Add_table()
 
     def connect(self):
         Connect()
@@ -136,6 +146,31 @@ class Connect(Template):
         btn_connect.place(x=220, y=170)
         btn_connect.bind('<Button-1>', lambda event: self.view.conn(
             self.entry_name.get()))
+
+class Add_table(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_create_table()
+        self.view = app
+
+    def init_create_table(self):
+        self.title('Add table')
+
+        label_name = tk.Label(self, text='Name:')
+        label_name.place(x=50, y=20)
+        label_structure = tk.Label(self, text='Structure:')
+        label_structure.place(x=50, y=70)
+
+        self.entry_name = ttk.Entry(self)
+        self.entry_name.place(x=200, y=20)
+
+        self.entry_structure = ttk.Entry(self)
+        self.entry_structure.place(x=200, y=70)
+
+        btn_ct = ttk.Button(self, text='Create button')
+        btn_ct.place(x=220, y=170)
+        btn_ct.bind('<Button-1>', lambda event: self.view.add_tb(
+            self.entry_name.get(), self.entry_structure.get(),))
 
 class Add_book(Template):
     def __init__(self):
@@ -227,6 +262,13 @@ class DB:
     def create_table(self):
         self.cur.execute("CALL create_tables()")
         print("CREATED!")
+        self.con.commit()
+
+    def add_table(self, name, structure):
+        self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        query = "create table " + name + "(" + structure + ");"
+        self.cur.execute(query)
+        print("Table created")
         self.con.commit()
 
     def query_add_book(self, title, writing_year, author_name, author_surname, num_book):
