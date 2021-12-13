@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from tkinter import scrolledtext
 
 
 class Main(tk.Frame):
@@ -151,14 +152,14 @@ class Connect(Template):
 class Add_table(Template):
     def __init__(self):
         super().__init__()
-        self.init_create_table()
+        self.init_add_table()
 
-    def init_create_table(self):
+    def init_add_table(self):
         self.title('Add table')
 
         label_name = tk.Label(self, text='Name:')
         label_name.place(x=50, y=20)
-        label_structure = tk.Label(self, text='Structure:')
+        label_structure = tk.Label(self, text='Structure')
         label_structure.place(x=50, y=70)
 
         self.entry_name = ttk.Entry(self)
@@ -167,10 +168,13 @@ class Add_table(Template):
         self.entry_structure = ttk.Entry(self)
         self.entry_structure.place(x=200, y=70)
 
-        btn_ct = ttk.Button(self, text='Create button')
+        btn_ct = ttk.Button(self, text='Add')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_tb(
-            self.entry_name.get(), self.entry_structure.get(),))
+            self.entry_name.get(), self.entry_structure.get(), ))
+
+    def add_tb(self, name, structure):
+        self.db.add_table(name, structure)
 
 class Add_book(Template):
     def __init__(self):
@@ -257,7 +261,7 @@ class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="123",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )
@@ -279,9 +283,9 @@ class DB:
 
     def connect(self, name):
         self.con = psycopg2.connect(
-            user="pupil",
+            user="postgres",
             database=name,
-            password="4321",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )
@@ -292,16 +296,20 @@ class DB:
         self.con.close()
 
     def create_table(self):
-        self.cur.execute("CALL create_tables()")
-        print("CREATED!")
-        self.con.commit()
+        try:
+            self.cur.execute("CALL create_tables();")
+            print("CREATED!")
+            self.con.commit()
+        except:
+            print("Tables are created yet")
 
     def add_table(self, name, structure):
-        self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        query = "create table " + name + "(" + structure + ");"
-        self.cur.execute(query)
-        print("Table created")
-        self.con.commit()
+        try:
+            self.cur.execute('CALL add_table(%s, %s);', (name, structure))
+            print("TABLE ADDED!")
+            self.con.commit()
+        except:
+            print("TABLE IS CREATED YET!")
         
     def query_add_book(self, title, writing_year, author_name, author_surname, num_book):
         pass
@@ -312,6 +320,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Library")
-    root.geometry("650x150+300+200")
+    root.geometry("850x150+300+200")
     root.resizable(False, False)
     root.mainloop()
