@@ -8,65 +8,52 @@ class Main(tk.Frame):
     def __init__(self, root):
         super().__init__(root)
         self.init_main()
+        self.db = db
 
     def init_main(self):
         toolbar = tk.Frame(bg='#d7d8e0', bd=2)
         toolbar.pack(side=tk.TOP, fill=tk.X)
 
-        btn_create_db = tk.Button(toolbar, text='Create databse', command=self.create_db, bg='#d7d8e0', bd=0,
+        btn_create_db = tk.Button(toolbar, text='Create databse', command=self.create_db, bg='#d7d8e0', bd=3,
                                   compound=tk.TOP)
         btn_create_db.pack(side=tk.LEFT)
 
-        btn_delete_db = tk.Button(toolbar, text='Delete databse', command=self.delete_db, bg='#d7d8e0', bd=0,
+        btn_delete_db = tk.Button(toolbar, text='Delete databse', command=self.delete_db, bg='#d7d8e0', bd=3,
                                   compound=tk.TOP)
         btn_delete_db.pack(side=tk.LEFT)
 
-        btn_connect = tk.Button(toolbar, text='Connect', command=self.connect, bg='#d7d8e0', bd=0,
+        btn_connect = tk.Button(toolbar, text='Connect', command=self.connect, bg='#d7d8e0', bd=3,
                                 compound=tk.TOP)
         btn_connect.pack(side=tk.LEFT)
 
-        btn_clt = tk.Button(toolbar, text='Create library tables', command=self.create_library_tables, bg='#d7d8e0', bd=0,
+        btn_clt = tk.Button(toolbar, text='Create library tables', command=self.create_tables, bg='#d7d8e0', bd=3,
                                   compound=tk.TOP)
         btn_clt.pack(side=tk.LEFT)
 
         btn_at = tk.Button(toolbar, text='Add table', command=self.add_table, bg='#d7d8e0',
-                           bd=0,
+                           bd=3,
                            compound=tk.TOP)
         btn_at.pack(side=tk.LEFT)
 
-        btn_add_book = tk.Button(toolbar, text='Add book', command=self.add_book, bg='#d7d8e0', bd=0,
+        btn_add_book = tk.Button(toolbar, text='Add book', command=self.add_book, bg='#d7d8e0', bd=3,
                                   compound=tk.TOP)
         btn_add_book.pack(side=tk.LEFT)
 
+        btn_connect.pack(side=tk.LEFT)
 
-    def add_db(self, name):
-        self.db.create_db(name)
-
-    def del_db(self, name):
-        self.db.delete_db(name)
-
-    def conn(self, name):
-        self.db.connect(name)
-
-    def add_tb(self, name, structure):
-        self.db.add_table(name, structure)
-
-    def add_b(self, title, writing_year, author_name, author_surname, num_book):
-        self.db.query_add_book(title, writing_year, author_name, author_surname, num_book)
-    btn_connect.pack(side=tk.LEFT)
-
-    btn_connect = tk.Button(toolbar, text='Print table', command=self.print_table, bg='#d7d8e0', bd=0,
+        btn_connect = tk.Button(toolbar, text='Print table', command=self.print_table, bg='#d7d8e0', bd=3,
                            compound=tk.TOP)
-    btn_connect.pack(side=tk.LEFT)
+        btn_connect.pack(side=tk.LEFT)
+
+
+    def create_tables(self):
+        self.db.create_table()
         
     def create_db(self):
         Create_db()
 
     def delete_db(self):
         Delete_db()
-
-    def create_library_tables(self):
-        self.db.create_table()
 
     def add_table(self):
         Add_table()
@@ -135,6 +122,8 @@ class Delete_db(Template):
         btn_delete.place(x=220, y=170)
         btn_delete.bind('<Button-1>', lambda event: self.del_db(
             self.entry_name.get()))
+    def del_db(self, name):
+        self.db.delete_db(name)
 
 class Connect(Template):
     def __init__(self):
@@ -148,16 +137,16 @@ class Connect(Template):
         label_name = tk.Label(self, text='Name:')
         label_name.place(x=50, y=20)
 
-    def del_db(self, name):
-        self.db.delete_db(name)
-
         self.entry_name = ttk.Entry(self)
         self.entry_name.place(x=200, y=20)
 
-        btn_connect = ttk.Button(self, text='Connect with db')
+        btn_connect = ttk.Button(self, text='Connect')
         btn_connect.place(x=220, y=170)
-        btn_connect.bind('<Button-1>', lambda event: self.view.conn(
+        btn_connect.bind('<Button-1>', lambda event: self.connect(
             self.entry_name.get()))
+        
+    def connect(self, name):
+        self.db.connect(name)
 
 class Add_table(Template):
     def __init__(self):
@@ -180,7 +169,7 @@ class Add_table(Template):
 
         btn_ct = ttk.Button(self, text='Create button')
         btn_ct.place(x=220, y=170)
-        btn_ct.bind('<Button-1>', lambda event: self.view.add_tb(
+        btn_ct.bind('<Button-1>', lambda event: self.add_tb(
             self.entry_name.get(), self.entry_structure.get(),))
 
 class Add_book(Template):
@@ -190,67 +179,47 @@ class Add_book(Template):
         self.view = app
 
     def init_add_book(self):
-            self.title('Add book')
-        btn_ct.bind('<Button-1>', lambda event: self.cr_tb(
-            self.entry_name.get(), self.entry_structure.get(),))
+        self.title('Add book')
+        label_title = tk.Label(self, text='Title:')
+        label_title.place(x=50, y=20)
 
-    def cr_tb(self, name, structure):
-        self.db.create_table(name, structure)
+        label_writing_year = tk.Label(self, text='Writing year:')
+        label_writing_year.place(x=50, y=45)
 
-class Connect(Template):
-    def __init__(self):
-        super().__init__()
-        self.init_create_table()
+        label_author_name = tk.Label(self, text='Author Name:')
+        label_author_name.place(x=50, y=70)
 
-    def init_create_table(self):
-        self.title('Connect')
+        label_author_surname = tk.Label(self, text='Author Surname:')
+        label_author_surname.place(x=50, y=95)
 
-            label_title = tk.Label(self, text='Title:')
-            label_title.place(x=50, y=20)
-
-            label_writing_year = tk.Label(self, text='Writing year:')
-            label_writing_year.place(x=50, y=45)
-
-            label_author_name = tk.Label(self, text='Author Name:')
-            label_author_name.place(x=50, y=70)
-
-            label_author_surname = tk.Label(self, text='Author Surname:')
-            label_author_surname.place(x=50, y=95)
-
-            label_num_book = tk.Label(self, text='Book number:')
-            label_num_book.place(x=50, y=120)
+        label_num_book = tk.Label(self, text='Book number:')
+        label_num_book.place(x=50, y=120)
 
 
-            self.entry_title = ttk.Entry(self)
-            self.entry_title.place(x=200, y=20)
+        self.entry_title = ttk.Entry(self)
+        self.entry_title.place(x=200, y=20)
 
-            self.entry_writing_year = ttk.Entry(self)
-            self.entry_writing_year.place(x=200, y=45)
+        self.entry_writing_year = ttk.Entry(self)
+        self.entry_writing_year.place(x=200, y=45)
 
-            self.entry_author_name = ttk.Entry(self)
-            self.entry_author_name.place(x=200, y=70)
+        self.entry_author_name = ttk.Entry(self)
+        self.entry_author_name.place(x=200, y=70)
 
-            self.entry_author_surname = ttk.Entry(self)
-            self.entry_author_surname.place(x=200, y=95)
+        self.entry_author_surname = ttk.Entry(self)
+        self.entry_author_surname.place(x=200, y=95)
 
-            self.entry_num_book = ttk.Entry(self)
-            self.entry_num_book.place(x=200, y=120)
+        self.entry_num_book = ttk.Entry(self)
+        self.entry_num_book.place(x=200, y=120)
 
+        btn_ct = ttk.Button(self, text='Add book')
+        btn_ct.place(x=220, y=170)
+        btn_ct.bind('<Button-1>', lambda event: self.view.add_b(
+        self.entry_title.get(), self.entry_writing_year.get(),
+        self.entry_author_name.get(), self.entry_author_surname.get(),
+        self.entry_num_book.get(), ))
 
-            btn_ct = ttk.Button(self, text='Add book')
-            btn_ct.place(x=220, y=170)
-            btn_ct.bind('<Button-1>', lambda event: self.view.add_b(
-                self.entry_title.get(), self.entry_writing_year.get(),
-                self.entry_author_name.get(), self.entry_author_surname.get(),
-                self.entry_num_book.get(), ))
-
-        btn_connect = ttk.Button(self, text='Connect with db')
-        btn_connect.place(x=220, y=170)
-        btn_connect.bind('<Button-1>', lambda event: self.conn(
-            self.entry_name.get()))
-
-    def conn(self, name):
-        self.db.connect(name)
+    def add_b(self, title, writing_year, author_name, author_surname, num_book):
+        self.db.query_add_book(title, writing_year, author_name, author_surname, num_book)
 
 class Print_table(Template):
     def __init__(self):
@@ -283,9 +252,6 @@ class Print_table(Template):
         self.tree.heading("total", text='Сумма')
         self.tree.pack()
         '''
-
-    def conn(self, name):
-        self.db.connect(name)
 
 class DB:
     def __init__(self):
