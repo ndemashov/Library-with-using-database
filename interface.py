@@ -294,14 +294,17 @@ class Add_export(Template):
 
     def init_add_export(self):
         self.title('Add export')
-        label_title = tk.Label(self, text='Date:')
-        label_title.place(x=50, y=20)
+        label_loaning_date = tk.Label(self, text='Loaning Date:')
+        label_loaning_date.place(x=50, y=20)
 
         label_writing_year = tk.Label(self, text='Reader ID:')
         label_writing_year.place(x=50, y=45)
 
         label_author_name = tk.Label(self, text='Book ID:')
         label_author_name.place(x=50, y=70)
+
+        label_return_date = tk.Label(self, text='Return Date:')
+        label_return_date.place(x=50, y=95)
 
         self.entry_date = ttk.Entry(self)
         self.entry_date.place(x=200, y=20)
@@ -312,14 +315,17 @@ class Add_export(Template):
         self.entry_book_id = ttk.Entry(self)
         self.entry_book_id.place(x=200, y=70)
 
+        self.entry_return_date = ttk.Entry(self)
+        self.entry_return_date.place(x=200, y=95)
+
         btn_ct = ttk.Button(self, text='Add export')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_e(
             self.entry_date.get(), self.entry_reader_id.get(),
-            self.entry_book_id.get(), ))
+            self.entry_book_id.get(), self.entry_return_date.get(), ))
 
-    def add_e(self, date, reader_id, book_id):
-        self.db.query_add_export(date, reader_id, book_id)
+    def add_e(self, date, reader_id, book_id, return_date):
+        self.db.query_add_export(date, reader_id, book_id, return_date)
 
 class Print_table(Template):
     def __init__(self):
@@ -404,12 +410,9 @@ class DB:
         self.con.close()
 
     def create_table(self):
-        try:
-            self.cur.execute("CALL create_tables();")
-            print("CREATED!")
-            self.con.commit()
-        except:
-            print("Tables are created yet")
+        self.cur.execute("CALL create_tables();")
+        print("CREATED!")
+        self.con.commit()
 
     def add_table(self, name, structure):
         try:
@@ -445,16 +448,11 @@ class DB:
         print("READER ADDED!")
         self.con.commit()
 
-    def query_add_export(self, date, reader_id, book_id):
-        try:
-            self.cur.execute('CALL add_export(%s, %s, %s);',
-                             (date, reader_id, book_id))
-            print("EXPORT ADDED!")
-            self.con.commit()
-        except:
-            print("INVALID USER OR BOOK ID!")
-        finally:
-            print("Go in Library again")
+    def query_add_export(self, date, reader_id, book_id, return_date):
+        self.cur.execute('CALL add_export(%s, %s, %s, %s);',
+                         (date, reader_id, book_id, return_date))
+        print("EXPORT ADDED!")
+        self.con.commit()
 
     def query_find_book(self, name):
         table = psql.read_sql("SELECT * FROM show_book('{}')".format(name), self.con)
