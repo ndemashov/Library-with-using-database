@@ -4,6 +4,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pandas as pd
 import pandas.io.sql as psql
+from procedure import create_library_tabel, delete_library_table, filling_labrary_table
 
 
 class Main(tk.Frame):
@@ -32,6 +33,14 @@ class Main(tk.Frame):
                                   compound=tk.TOP)
         btn_clt.pack(side=tk.LEFT)
 
+        btn_dlt = tk.Button(toolbar, text='Delete library tables', command=self.delete_tables, bg='#d7d8e0', bd=3,
+                                  compound=tk.TOP)
+        btn_dlt.pack(side=tk.LEFT)
+
+        btn_fill = tk.Button(toolbar, text='Filling tables', command=self.filling_tables, bg='#d7d8e0', bd=3,
+                            compound=tk.TOP)
+        btn_fill.pack(side=tk.LEFT)
+
         btn_at = tk.Button(toolbar, text='Add table', command=self.add_table, bg='#d7d8e0',
                            bd=3,
                            compound=tk.TOP)
@@ -57,9 +66,6 @@ class Main(tk.Frame):
                                  compound=tk.TOP)
         btn_find_book.pack(side=tk.LEFT)
 
-
-    def create_tables(self):
-        self.db.create_table()
         
     def create_db(self):
         Create_db()
@@ -67,11 +73,20 @@ class Main(tk.Frame):
     def delete_db(self):
         Delete_db()
 
-    def add_table(self):
-        Add_table()
-
     def connect(self):
         Connect()
+
+    def create_tables(self):
+        self.db.procedure_create_table()
+
+    def delete_tables(self):
+        self.db.procedure_delete_table()
+
+    def filling_tables(self):
+        self.db.procedure_filling_tables()
+
+    def add_table(self):
+        Add_table()
 
     def add_book(self):
         Add_book()
@@ -385,8 +400,10 @@ class DB:
         self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         query = "create database " + name + ";"
         self.cur.execute(query)
-        print("Created")
         self.con.commit()
+        print("Created")
+
+
 
     def delete_db(self, name):
         self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -405,13 +422,28 @@ class DB:
         )
         print("Connected")
         self.cur = self.con.cursor()
+        # При подключении к БД(любой) автоматически создаются процедуры для создания и удаления наших таблиц
+        self.cur.execute("{}".format(create_library_tabel()))
+        self.cur.execute("{}".format(delete_library_table()))
+        self.con.commit()
 
     def close(self):
         self.con.close()
 
-    def create_table(self):
+    def procedure_create_table(self):
         self.cur.execute("CALL create_tables();")
+        self.cur.execute("{}".format(filling_labrary_table())) # Создаем процедуру для заполнения таблиц
         print("CREATED!")
+        self.con.commit()
+
+    def procedure_delete_table(self):
+        self.cur.execute("CALL delete_tables();")
+        print("DELETED!")
+        self.con.commit()
+
+    def procedure_filling_tables(self):
+        self.cur.execute("CALL filling_tables();")
+        print("FILLING!")
         self.con.commit()
 
     def add_table(self, name, structure):
@@ -465,6 +497,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Library")
-    root.geometry("1250x150+300+200")
+    root.geometry("1650x150+300+200")
     root.resizable(False, False)
     root.mainloop()
