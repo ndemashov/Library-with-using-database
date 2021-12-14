@@ -2,7 +2,7 @@
  CREATE OR REPLACE PROCEDURE create_tables()
     LANGUAGE SQL
     AS $$
-    CREATE TABLE author(
+     CREATE TABLE author(
         id SERIAL,
         surname VARCHAR(20) NOT NULL,
         name VARCHAR(20) NOT NULL,
@@ -23,7 +23,7 @@
     $$;
 
     CREATE TABLE book(
-        id INT DEFAULT 1,
+        id SERIAL,
         title VARCHAR(20) NOT NULL,
         writing_year INT CHECK (writing_year<=2022),
         author INT,
@@ -45,7 +45,7 @@
     $$;
 
     CREATE TABLE reader(
-        id INT DEFAULT 1,
+        id SERIAL,
         sname VARCHAR(20) NOT NULL,
         name VARCHAR(20) NOT NULL,
         patronymic VARCHAR(20),
@@ -151,4 +151,18 @@ CREATE OR REPLACE PROCEDURE add_export(d date, r int, b int)
 LANGUAGE SQL
 AS $$
 	INSERT INTO export (date1, reader, book, presence) VALUES(d, r, b, false)
+$$;
+==============================================
+Функция поиска книги по названию
+CREATE OR REPLACE FUNCTION show_book( b_title varchar(50) )
+RETURNS TABLE(title varchar(15), surname varchar(15), name varchar(15))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+return query(
+    SELECT book.title, author.surname, author.name FROM book
+	INNER JOIN author ON book.author = author.id
+	WHERE book.title = b_title
+    );
+END
 $$;

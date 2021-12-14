@@ -53,6 +53,10 @@ class Main(tk.Frame):
                            compound=tk.TOP)
         btn_print_tb.pack(side=tk.LEFT)
 
+        btn_find_book = tk.Button(toolbar, text='Find book', command=self.find_book, bg='#d7d8e0', bd=3,
+                                 compound=tk.TOP)
+        btn_find_book.pack(side=tk.LEFT)
+
 
     def create_tables(self):
         self.db.create_table()
@@ -80,6 +84,9 @@ class Main(tk.Frame):
 
     def print_table(self):
         Print_table()
+
+    def find_book(self):
+        Find_book()
 
 class Template(tk.Toplevel):
      def __init__(self):
@@ -336,6 +343,28 @@ class Print_table(Template):
     def print_table(self, name):
         self.db.print_table(name)
 
+class Find_book(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_find_book()
+
+    def init_find_book(self):
+        self.title('Find book')
+
+        label_name = tk.Label(self, text='Title:')
+        label_name.place(x=50, y=20)
+
+        self.entry_name = ttk.Entry(self)
+        self.entry_name.place(x=100, y=20)
+
+        btn_connect = ttk.Button(self, text='Find')
+        btn_connect.place(x=220, y=170)
+        btn_connect.bind('<Button-1>', lambda event: self.find_book(
+            self.entry_name.get()))
+
+    def find_book(self, name):
+        self.db.query_find_book(name)
+
 class DB:
     def __init__(self):
         self.con = psycopg2.connect(
@@ -427,8 +456,10 @@ class DB:
         finally:
             print("Go in Library again")
 
-    def query_print_tb(self, name):
-        pass
+    def query_find_book(self, name):
+        table = psql.read_sql("SELECT * FROM show_book('{}')".format(name), self.con)
+        print(table)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -436,6 +467,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Library")
-    root.geometry("1050x150+300+200")
+    root.geometry("1250x150+300+200")
     root.resizable(False, False)
     root.mainloop()
