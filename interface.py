@@ -340,7 +340,7 @@ class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="123",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )
@@ -362,9 +362,9 @@ class DB:
 
     def connect(self, name):
         self.con = psycopg2.connect(
-            user="pupil",
+            user="postgres",
             database=name,
-            password="4321",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )

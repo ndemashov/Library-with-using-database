@@ -1,17 +1,20 @@
-
-        CREATE TABLE author(
+Процедура для создания 4 таблиц
+ CREATE OR REPLACE PROCEDURE create_tables()
+    LANGUAGE SQL
+    AS $$
+    CREATE TABLE author(
         id SERIAL,
         surname VARCHAR(20) NOT NULL,
         name VARCHAR(20) NOT NULL,
         patronymic VARCHAR(20),
-        PRIMARY KEY(id) 
+        PRIMARY KEY(id)
     );
-    
+
     CREATE OR REPLACE FUNCTION print_author()
     RETURNS TABLE(id integer, name varchar(20), surname varchar(20), patronimic varchar(20))
     LANGUAGE plpgsql
     AS $$
-    DECLARE 
+    DECLARE
     BEGIN
     return query(
 	    SELECT * FROM author
@@ -28,12 +31,12 @@
         FOREIGN KEY (author) REFERENCES author(id)
     );
     CREATE INDEX ON book (title);
-    
+
     CREATE OR REPLACE FUNCTION print_book()
     RETURNS TABLE(id integer, title VARCHAR(20), writing_year INT, author INT)
     LANGUAGE plpgsql
     AS $$
-    DECLARE 
+    DECLARE
     BEGIN
     return query(
 	    SELECT * FROM book
@@ -49,12 +52,12 @@
         phone varchar(12),
         PRIMARY KEY(id)
     );
-    
+
     CREATE OR REPLACE FUNCTION print_reader()
     RETURNS TABLE(id integer, sname VARCHAR(20), name VARCHAR(20), patronymic VARCHAR(20), phone varchar(12))
     LANGUAGE plpgsql
     AS $$
-    DECLARE 
+    DECLARE
     BEGIN
     return query(
 	    SELECT * FROM reader
@@ -71,15 +74,81 @@
         FOREIGN KEY (book) REFERENCES book(id),
         FOREIGN KEY (reader) REFERENCES reader(id)
     );
-    
+
     CREATE OR REPLACE FUNCTION print_export()
     RETURNS TABLE(date1 date, reader INT, book INT, date2 date, presence bool)
     LANGUAGE plpgsql
     AS $$
-    DECLARE 
+    DECLARE
     BEGIN
     return query(
 	    SELECT * FROM export
 	);
     END
     $$;
+    $$;
+==============================================
+Процедура для добавления таблицы
+CREATE OR REPLACE PROCEDURE add_table(t_name varchar(30),
+                                     t_structure varchar(30))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+   EXECUTE REPLACE (format('
+      CREATE TABLE IF NOT EXISTS %I ( %I )', t_name, t_structure), '"', '');
+END
+$$;
+==============================================
+Процедура для добавления книги + автора
+CREATE OR REPLACE PROCEDURE add_book(b_title varchar(50),
+                                    b_writing_year INT,
+                                    a_surname varchar(20),
+                                    a_name varchar(20),
+                                    a_patronymic varchar(20) DEFAULT NULL)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+	id_author author.id%type;
+BEGIN
+
+    IF NOT EXISTS (SELECT surname, name, patronymic FROM author
+    WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic)
+    THEN
+	INSERT INTO author (surname, name, patronymic) VALUES (a_surname, a_name, a_patronymic);
+
+	IF a_patronymic <> NULL THEN
+		SELECT id FROM author INTO id_author
+		WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
+	ELSE
+		SELECT id FROM author INTO id_author
+		WHERE surname = a_surname AND name = a_name;
+	END IF;
+
+	INSERT INTO book (title, writing_year, author) VALUES (b_title, b_writing_year, id_author);
+
+	ELSE
+		IF a_patronymic <> NULL THEN
+			SELECT id FROM author INTO id_author
+			WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
+		ELSE
+			SELECT id FROM author INTO id_author
+			WHERE surname = a_surname AND name = a_name;
+		END IF;
+		INSERT INTO book (title, writing_year, author) VALUES (b_title, b_writing_year, id_author);
+    END IF;
+END
+$$;
+==============================================
+Процедура для добавления читателя
+CREATE OR REPLACE PROCEDURE add_reader(s varchar, n varchar, p varchar, phone varchar)
+LANGUAGE SQL
+AS $$
+	INSERT INTO reader (sname, name, patronymic, phone) VALUES(s, n, p, phone)
+$$;
+==============================================
+Процедура имитирующая взитие и возврат книги
+CREATE OR REPLACE PROCEDURE add_export(d date, r int, b int)
+LANGUAGE SQL
+AS $$
+	INSERT INTO export (date1, reader, book, presence) VALUES(d, r, b, false)
+$$;
