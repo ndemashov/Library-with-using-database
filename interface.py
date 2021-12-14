@@ -40,11 +40,17 @@ class Main(tk.Frame):
                                   compound=tk.TOP)
         btn_add_book.pack(side=tk.LEFT)
 
-        btn_connect.pack(side=tk.LEFT)
+        btn_add_reader = tk.Button(toolbar, text='Add reader', command=self.add_reader, bg='#d7d8e0', bd=3,
+                                 compound=tk.TOP)
+        btn_add_reader.pack(side=tk.LEFT)
 
-        btn_connect = tk.Button(toolbar, text='Print table', command=self.print_table, bg='#d7d8e0', bd=3,
+        btn_add_export = tk.Button(toolbar, text='Add export', command=self.add_export, bg='#d7d8e0', bd=3,
+                                   compound=tk.TOP)
+        btn_add_export.pack(side=tk.LEFT)
+
+        btn_print_tb = tk.Button(toolbar, text='Print table', command=self.print_table, bg='#d7d8e0', bd=3,
                            compound=tk.TOP)
-        btn_connect.pack(side=tk.LEFT)
+        btn_print_tb.pack(side=tk.LEFT)
 
 
     def create_tables(self):
@@ -64,6 +70,12 @@ class Main(tk.Frame):
 
     def add_book(self):
         Add_book()
+
+    def add_reader(self):
+        Add_reader()
+
+    def add_export(self):
+        Add_export()
 
     def print_table(self):
         Print_table()
@@ -225,6 +237,82 @@ class Add_book(Template):
     def add_b(self, title, writing_year, author_name, author_surname, author_patronymic):
         self.db.query_add_book(title, writing_year, author_name, author_surname, author_patronymic)
 
+class Add_reader(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_add_reader()
+        self.view = app
+
+    def init_add_reader(self):
+        self.title('Add reader')
+        label_title = tk.Label(self, text='Surname:')
+        label_title.place(x=50, y=20)
+
+        label_writing_year = tk.Label(self, text='Name:')
+        label_writing_year.place(x=50, y=45)
+
+        label_author_name = tk.Label(self, text='Patronymic:')
+        label_author_name.place(x=50, y=70)
+
+        label_author_surname = tk.Label(self, text='Phone:')
+        label_author_surname.place(x=50, y=95)
+
+        self.entry_surname = ttk.Entry(self)
+        self.entry_surname.place(x=200, y=20)
+
+        self.entry_name = ttk.Entry(self)
+        self.entry_name.place(x=200, y=45)
+
+        self.entry_patronymic = ttk.Entry(self)
+        self.entry_patronymic.place(x=200, y=70)
+
+        self.entry_phone = ttk.Entry(self)
+        self.entry_phone.place(x=200, y=95)
+
+        btn_ct = ttk.Button(self, text='Add reader')
+        btn_ct.place(x=220, y=170)
+        btn_ct.bind('<Button-1>', lambda event: self.add_r(
+        self.entry_surname.get(), self.entry_name.get(),
+        self.entry_patronymic.get(), self.entry_phone.get(), ))
+
+    def add_r(self, surname, name, patronymic, phone):
+        self.db.query_add_reader(surname, name, patronymic, phone)
+
+class Add_export(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_add_export()
+        self.view = app
+
+    def init_add_export(self):
+        self.title('Add export')
+        label_title = tk.Label(self, text='Date:')
+        label_title.place(x=50, y=20)
+
+        label_writing_year = tk.Label(self, text='Reader ID:')
+        label_writing_year.place(x=50, y=45)
+
+        label_author_name = tk.Label(self, text='Book ID:')
+        label_author_name.place(x=50, y=70)
+
+        self.entry_date = ttk.Entry(self)
+        self.entry_date.place(x=200, y=20)
+
+        self.entry_reader_id = ttk.Entry(self)
+        self.entry_reader_id.place(x=200, y=45)
+
+        self.entry_book_id = ttk.Entry(self)
+        self.entry_book_id.place(x=200, y=70)
+
+        btn_ct = ttk.Button(self, text='Add export')
+        btn_ct.place(x=220, y=170)
+        btn_ct.bind('<Button-1>', lambda event: self.add_e(
+            self.entry_date.get(), self.entry_reader_id.get(),
+            self.entry_book_id.get(), ))
+
+    def add_e(self, date, reader_id, book_id):
+        self.db.query_add_export(date, reader_id, book_id)
+
 class Print_table(Template):
     def __init__(self):
         super().__init__()
@@ -243,19 +331,9 @@ class Print_table(Template):
         btn_connect.place(x=220, y=170)
         btn_connect.bind('<Button-1>', lambda event: self.conn(
             self.entry_name.get()))
-        '''
-        self.tree = ttk.Treeview(self, columns=('ID', 'description', 'costs', 'total'),
-                                 height=15, show='headings')
-        self.tree.column("ID", width=3, anchor=tk.CENTER)
-        self.tree.column("description", width=365, anchor=tk.CENTER)
-        self.tree.column("costs", width=150, anchor=tk.CENTER)
-        self.tree.column("total", width=100, anchor=tk.CENTER)
-        self.tree.heading("ID", text='ID')
-        self.tree.heading("description", text='Наименование')
-        self.tree.heading("costs", text='Статья дохода/расхода')
-        self.tree.heading("total", text='Сумма')
-        self.tree.pack()
-        '''
+
+    def conn(self, name):
+        self.db.query_print_tb(name)
 
 class DB:
     def __init__(self):
@@ -316,12 +394,32 @@ class DB:
         print("BOOK ADDED!")
         self.con.commit()
 
+    def query_add_reader(self, surname, name, patronymic, phone):
+        self.cur.execute('CALL add_reader(%s, %s, %s, %s);',
+                         (surname, name, patronymic, phone))
+        print("READER ADDED!")
+        self.con.commit()
+
+    def query_add_export(self, date, reader_id, book_id):
+        try:
+            self.cur.execute('CALL add_export(%s, %s, %s);',
+                             (date, reader_id, book_id))
+            print("EXPORT ADDED!")
+            self.con.commit()
+        except:
+            print("INVALID USER OR BOOK ID!")
+        finally:
+            print("Go in Library again")
+
+    def query_print_tb(self, name):
+        pass
+
 if __name__ == "__main__":
     root = tk.Tk()
     db = DB()
     app = Main(root)
     app.pack()
     root.title("Library")
-    root.geometry("850x150+300+200")
+    root.geometry("1050x150+300+200")
     root.resizable(False, False)
     root.mainloop()
