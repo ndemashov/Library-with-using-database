@@ -4,6 +4,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pandas as pd
 import pandas.io.sql as psql
+from procedure import create_library_tabel, delete_library_table, filling_labrary_table
 
 
 class Main(tk.Frame):
@@ -32,6 +33,14 @@ class Main(tk.Frame):
                                   compound=tk.TOP)
         btn_clt.pack(side=tk.LEFT)
 
+        btn_dlt = tk.Button(toolbar, text='Delete library tables', command=self.delete_tables, bg='#d7d8e0', bd=3,
+                                  compound=tk.TOP)
+        btn_dlt.pack(side=tk.LEFT)
+
+        btn_fill = tk.Button(toolbar, text='Filling tables', command=self.filling_tables, bg='#d7d8e0', bd=3,
+                            compound=tk.TOP)
+        btn_fill.pack(side=tk.LEFT)
+
         btn_at = tk.Button(toolbar, text='Add table', command=self.add_table, bg='#d7d8e0',
                            bd=3,
                            compound=tk.TOP)
@@ -53,9 +62,10 @@ class Main(tk.Frame):
                            compound=tk.TOP)
         btn_print_tb.pack(side=tk.LEFT)
 
+        btn_find_book = tk.Button(toolbar, text='Find book', command=self.find_book, bg='#d7d8e0', bd=3,
+                                 compound=tk.TOP)
+        btn_find_book.pack(side=tk.LEFT)
 
-    def create_tables(self):
-        self.db.create_table()
         
     def create_db(self):
         Create_db()
@@ -63,11 +73,20 @@ class Main(tk.Frame):
     def delete_db(self):
         Delete_db()
 
-    def add_table(self):
-        Add_table()
-
     def connect(self):
         Connect()
+
+    def create_tables(self):
+        self.db.procedure_create_table()
+
+    def delete_tables(self):
+        self.db.procedure_delete_table()
+
+    def filling_tables(self):
+        self.db.procedure_filling_tables()
+
+    def add_table(self):
+        Add_table()
 
     def add_book(self):
         Add_book()
@@ -80,6 +99,9 @@ class Main(tk.Frame):
 
     def print_table(self):
         Print_table()
+
+    def find_book(self):
+        Find_book()
 
 class Template(tk.Toplevel):
      def __init__(self):
@@ -287,14 +309,17 @@ class Add_export(Template):
 
     def init_add_export(self):
         self.title('Add export')
-        label_title = tk.Label(self, text='Date:')
-        label_title.place(x=50, y=20)
+        label_loaning_date = tk.Label(self, text='Loaning Date:')
+        label_loaning_date.place(x=50, y=20)
 
         label_writing_year = tk.Label(self, text='Reader ID:')
         label_writing_year.place(x=50, y=45)
 
         label_author_name = tk.Label(self, text='Book ID:')
         label_author_name.place(x=50, y=70)
+
+        label_return_date = tk.Label(self, text='Return Date:')
+        label_return_date.place(x=50, y=95)
 
         self.entry_date = ttk.Entry(self)
         self.entry_date.place(x=200, y=20)
@@ -305,14 +330,17 @@ class Add_export(Template):
         self.entry_book_id = ttk.Entry(self)
         self.entry_book_id.place(x=200, y=70)
 
+        self.entry_return_date = ttk.Entry(self)
+        self.entry_return_date.place(x=200, y=95)
+
         btn_ct = ttk.Button(self, text='Add export')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_e(
             self.entry_date.get(), self.entry_reader_id.get(),
-            self.entry_book_id.get(), ))
+            self.entry_book_id.get(), self.entry_return_date.get(), ))
 
-    def add_e(self, date, reader_id, book_id):
-        self.db.query_add_export(date, reader_id, book_id)
+    def add_e(self, date, reader_id, book_id, return_date):
+        self.db.query_add_export(date, reader_id, book_id, return_date)
 
 class Print_table(Template):
     def __init__(self):
@@ -336,6 +364,28 @@ class Print_table(Template):
     def print_table(self, name):
         self.db.print_table(name)
 
+class Find_book(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_find_book()
+
+    def init_find_book(self):
+        self.title('Find book')
+
+        label_name = tk.Label(self, text='Title:')
+        label_name.place(x=50, y=20)
+
+        self.entry_name = ttk.Entry(self)
+        self.entry_name.place(x=100, y=20)
+
+        btn_connect = ttk.Button(self, text='Find')
+        btn_connect.place(x=220, y=170)
+        btn_connect.bind('<Button-1>', lambda event: self.find_book(
+            self.entry_name.get()))
+
+    def find_book(self, name):
+        self.db.query_find_book(name)
+
 class DB:
     def __init__(self):
         self.con = psycopg2.connect(
@@ -350,8 +400,10 @@ class DB:
         self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         query = "create database " + name + ";"
         self.cur.execute(query)
-        print("Created")
         self.con.commit()
+        print("Created")
+
+
 
     def delete_db(self, name):
         self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -370,17 +422,29 @@ class DB:
         )
         print("Connected")
         self.cur = self.con.cursor()
+        # При подключении к БД(любой) автоматически создаются процедуры для создания и удаления наших таблиц
+        self.cur.execute("{}".format(create_library_tabel()))
+        self.cur.execute("{}".format(delete_library_table()))
+        self.con.commit()
 
     def close(self):
         self.con.close()
 
-    def create_table(self):
-        try:
-            self.cur.execute("CALL create_tables();")
-            print("CREATED!")
-            self.con.commit()
-        except:
-            print("Tables are created yet")
+    def procedure_create_table(self):
+        self.cur.execute("CALL create_tables();")
+        self.cur.execute("{}".format(filling_labrary_table())) # Создаем процедуру для заполнения таблиц
+        print("CREATED!")
+        self.con.commit()
+
+    def procedure_delete_table(self):
+        self.cur.execute("CALL delete_tables();")
+        print("DELETED!")
+        self.con.commit()
+
+    def procedure_filling_tables(self):
+        self.cur.execute("CALL filling_tables();")
+        print("FILLING!")
+        self.con.commit()
 
     def add_table(self, name, structure):
         try:
@@ -416,19 +480,16 @@ class DB:
         print("READER ADDED!")
         self.con.commit()
 
-    def query_add_export(self, date, reader_id, book_id):
-        try:
-            self.cur.execute('CALL add_export(%s, %s, %s);',
-                             (date, reader_id, book_id))
-            print("EXPORT ADDED!")
-            self.con.commit()
-        except:
-            print("INVALID USER OR BOOK ID!")
-        finally:
-            print("Go in Library again")
+    def query_add_export(self, date, reader_id, book_id, return_date):
+        self.cur.execute('CALL add_export(%s, %s, %s, %s);',
+                         (date, reader_id, book_id, return_date))
+        print("EXPORT ADDED!")
+        self.con.commit()
 
-    def query_print_tb(self, name):
-        pass
+    def query_find_book(self, name):
+        table = psql.read_sql("SELECT * FROM show_book('{}')".format(name), self.con)
+        print(table)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -436,6 +497,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Library")
-    root.geometry("1050x150+300+200")
+    root.geometry("1650x150+300+200")
     root.resizable(False, False)
     root.mainloop()
