@@ -190,13 +190,13 @@ class Add_book(Template):
         label_writing_year = tk.Label(self, text='Writing year:')
         label_writing_year.place(x=50, y=45)
 
-        label_author_name = tk.Label(self, text='Author Name:')
+        label_author_name = tk.Label(self, text='Author Surname:')
         label_author_name.place(x=50, y=70)
 
-        label_author_surname = tk.Label(self, text='Author Surname:')
+        label_author_surname = tk.Label(self, text='Author name:')
         label_author_surname.place(x=50, y=95)
 
-        label_num_book = tk.Label(self, text='Book number:')
+        label_num_book = tk.Label(self, text='Author patronymic')
         label_num_book.place(x=50, y=120)
 
 
@@ -206,24 +206,24 @@ class Add_book(Template):
         self.entry_writing_year = ttk.Entry(self)
         self.entry_writing_year.place(x=200, y=45)
 
-        self.entry_author_name = ttk.Entry(self)
-        self.entry_author_name.place(x=200, y=70)
-
         self.entry_author_surname = ttk.Entry(self)
-        self.entry_author_surname.place(x=200, y=95)
+        self.entry_author_surname.place(x=200, y=70)
 
-        self.entry_num_book = ttk.Entry(self)
-        self.entry_num_book.place(x=200, y=120)
+        self.entry_author_name = ttk.Entry(self)
+        self.entry_author_name.place(x=200, y=95)
+
+        self.entry_author_patronymic = ttk.Entry(self)
+        self.entry_author_patronymic.place(x=200, y=120)
 
         btn_ct = ttk.Button(self, text='Add book')
         btn_ct.place(x=220, y=170)
-        btn_ct.bind('<Button-1>', lambda event: self.view.add_b(
+        btn_ct.bind('<Button-1>', lambda event: self.add_b(
         self.entry_title.get(), self.entry_writing_year.get(),
         self.entry_author_name.get(), self.entry_author_surname.get(),
-        self.entry_num_book.get(), ))
+        self.entry_author_patronymic.get(), ))
 
-    def add_b(self, title, writing_year, author_name, author_surname, num_book):
-        self.db.query_add_book(title, writing_year, author_name, author_surname, num_book)
+    def add_b(self, title, writing_year, author_name, author_surname, author_patronymic):
+        self.db.query_add_book(title, writing_year, author_name, author_surname, author_patronymic)
 
 class Print_table(Template):
     def __init__(self):
@@ -311,8 +311,10 @@ class DB:
         except:
             print("TABLE IS CREATED YET!")
         
-    def query_add_book(self, title, writing_year, author_name, author_surname, num_book):
-        pass
+    def query_add_book(self, title, writing_year, author_surname, author_name, author_patronymic):
+        self.cur.execute('CALL add_book(%s, %s, %s, %s, %s);', (title, writing_year, author_surname, author_name, author_patronymic) )
+        print("BOOK ADDED!")
+        self.con.commit()
 
 if __name__ == "__main__":
     root = tk.Tk()
