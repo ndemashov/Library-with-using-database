@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from tkinter import scrolledtext
+import pandas as pd
+import pandas.io.sql as psql
 
 
 class Main(tk.Frame):
@@ -329,17 +330,17 @@ class Print_table(Template):
 
         btn_connect = ttk.Button(self, text='Print')
         btn_connect.place(x=220, y=170)
-        btn_connect.bind('<Button-1>', lambda event: self.conn(
+        btn_connect.bind('<Button-1>', lambda event: self.print_table(
             self.entry_name.get()))
 
-    def conn(self, name):
-        self.db.query_print_tb(name)
+    def print_table(self, name):
+        self.db.print_table(name)
 
 class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="12345",
+            password="123",
             host="127.0.0.1",
             port="5432"
         )
@@ -361,9 +362,9 @@ class DB:
 
     def connect(self, name):
         self.con = psycopg2.connect(
-            user="postgres",
+            user="pupil",
             database=name,
-            password="12345",
+            password="4321",
             host="127.0.0.1",
             port="5432"
         )
@@ -393,6 +394,21 @@ class DB:
         self.cur.execute('CALL add_book(%s, %s, %s, %s, %s);', (title, writing_year, author_surname, author_name, author_patronymic) )
         print("BOOK ADDED!")
         self.con.commit()
+        
+    def print_table(self, name):
+        try:
+            if(name == 'author'):
+                table= psql.read_sql("SELECT * FROM print_author()", self.con)
+            elif(name == 'book'):
+                table= psql.read_sql("SELECT * FROM print_book()", self.con)
+            elif(name == 'reader'):
+                table= psql.read_sql("SELECT * FROM print_reader()", self.con)
+            elif(name == 'export'):
+                table= psql.read_sql("SELECT * FROM print_export()", self.con)
+            print(table)
+        except:
+            print("There is no table " + name)
+
 
     def query_add_reader(self, surname, name, patronymic, phone):
         self.cur.execute('CALL add_reader(%s, %s, %s, %s);',

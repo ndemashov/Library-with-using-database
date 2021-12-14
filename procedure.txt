@@ -1,0 +1,85 @@
+
+        CREATE TABLE author(
+        id SERIAL,
+        surname VARCHAR(20) NOT NULL,
+        name VARCHAR(20) NOT NULL,
+        patronymic VARCHAR(20),
+        PRIMARY KEY(id) 
+    );
+    
+    CREATE OR REPLACE FUNCTION print_author()
+    RETURNS TABLE(id integer, name varchar(20), surname varchar(20), patronimic varchar(20))
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE 
+    BEGIN
+    return query(
+	    SELECT * FROM author
+	);
+    END
+    $$;
+
+    CREATE TABLE book(
+        id INT DEFAULT 1,
+        title VARCHAR(20) NOT NULL,
+        writing_year INT CHECK (writing_year<=2022),
+        author INT,
+        PRIMARY KEY(id),
+        FOREIGN KEY (author) REFERENCES author(id)
+    );
+    CREATE INDEX ON book (title);
+    
+    CREATE OR REPLACE FUNCTION print_book()
+    RETURNS TABLE(id integer, title VARCHAR(20), writing_year INT, author INT)
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE 
+    BEGIN
+    return query(
+	    SELECT * FROM book
+	);
+    END
+    $$;
+
+    CREATE TABLE reader(
+        id INT DEFAULT 1,
+        sname VARCHAR(20) NOT NULL,
+        name VARCHAR(20) NOT NULL,
+        patronymic VARCHAR(20),
+        phone varchar(12),
+        PRIMARY KEY(id)
+    );
+    
+    CREATE OR REPLACE FUNCTION print_reader()
+    RETURNS TABLE(id integer, sname VARCHAR(20), name VARCHAR(20), patronymic VARCHAR(20), phone varchar(12))
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE 
+    BEGIN
+    return query(
+	    SELECT * FROM reader
+	);
+    END
+    $$;
+
+    CREATE TABLE export(
+        date1 date NOT NULL,
+        reader INT NOT NULL,
+        book INT NOT NULL,
+        date2 date NOT NULL,
+        presence bool DEFAULT NULL,
+        FOREIGN KEY (book) REFERENCES book(id),
+        FOREIGN KEY (reader) REFERENCES reader(id)
+    );
+    
+    CREATE OR REPLACE FUNCTION print_export()
+    RETURNS TABLE(date1 date, reader INT, book INT, date2 date, presence bool)
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE 
+    BEGIN
+    return query(
+	    SELECT * FROM export
+	);
+    END
+    $$;
