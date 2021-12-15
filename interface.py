@@ -390,7 +390,7 @@ class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="12345",
+            password="22001",
             host="127.0.0.1",
             port="5432"
         )
@@ -403,8 +403,6 @@ class DB:
         self.con.commit()
         print("Created")
 
-
-
     def delete_db(self, name):
         self.con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         query = "drop database " + name + ";"
@@ -416,7 +414,7 @@ class DB:
         self.con = psycopg2.connect(
             user="postgres",
             database=name,
-            password="12345",
+            password="22001",
             host="127.0.0.1",
             port="5432"
         )
@@ -425,16 +423,20 @@ class DB:
         # При подключении к БД(любой) автоматически создаются процедуры для создания и удаления наших таблиц
         self.cur.execute("{}".format(create_library_tabel()))
         self.cur.execute("{}".format(delete_library_table()))
+        print("proc created")
         self.con.commit()
 
     def close(self):
         self.con.close()
 
     def procedure_create_table(self):
-        self.cur.execute("CALL create_tables();")
-        self.cur.execute("{}".format(filling_labrary_table())) # Создаем процедуру для заполнения таблиц
-        print("CREATED!")
-        self.con.commit()
+        try:
+            self.cur.execute("CALL create_tables();")
+            self.cur.execute("{}".format(filling_labrary_table()))  # Создаем процедуру для заполнения таблиц
+            print("CREATED!")
+            self.con.commit()
+        except:
+            print('Tables are created yet')
 
     def procedure_delete_table(self):
         self.cur.execute("CALL delete_tables();")
@@ -453,12 +455,12 @@ class DB:
             self.con.commit()
         except:
             print("TABLE IS CREATED YET!")
-        
+
     def query_add_book(self, title, writing_year, author_surname, author_name, author_patronymic):
         self.cur.execute('CALL add_book(%s, %s, %s, %s, %s);', (title, writing_year, author_surname, author_name, author_patronymic) )
         print("BOOK ADDED!")
         self.con.commit()
-        
+
     def print_table(self, name):
         try:
             if(name == 'author'):
@@ -469,6 +471,8 @@ class DB:
                 table= psql.read_sql("SELECT * FROM print_reader()", self.con)
             elif(name == 'export'):
                 table= psql.read_sql("SELECT * FROM print_export()", self.con)
+            elif (name == 'phone'):
+                table = psql.read_sql("SELECT * FROM print_phone()", self.con)
             print(table)
         except:
             print("There is no table " + name)
