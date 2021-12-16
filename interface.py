@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pandas as pd
 import pandas.io.sql as psql
-from procedure import create_library_tabel, delete_library_table, filling_labrary_table
+from procedure import create_library_tabel, delete_library_table, filling_labrary_table, add_export, presence_export
 
 
 class Main(tk.Frame):
@@ -58,6 +58,10 @@ class Main(tk.Frame):
                                    compound=tk.TOP)
         btn_add_export.pack(side=tk.LEFT)
 
+        btn_return_book = tk.Button(toolbar, text='Return book', command=self.return_book, bg='#d7d8e0', bd=3,
+                                   compound=tk.TOP)
+        btn_return_book.pack(side=tk.LEFT)
+
         btn_print_tb = tk.Button(toolbar, text='Print table', command=self.print_table, bg='#d7d8e0', bd=3,
                            compound=tk.TOP)
         btn_print_tb.pack(side=tk.LEFT)
@@ -66,7 +70,7 @@ class Main(tk.Frame):
                                  compound=tk.TOP)
         btn_find_book.pack(side=tk.LEFT)
 
-        
+
     def create_db(self):
         Create_db()
 
@@ -97,6 +101,9 @@ class Main(tk.Frame):
     def add_export(self):
         Add_export()
 
+    def return_book(self):
+        Return_book()
+
     def print_table(self):
         Print_table()
 
@@ -116,13 +123,13 @@ class Template(tk.Toplevel):
         btn_close.place(x=300, y=170)
 
         self.grab_set()
-        self.focus_set()         
+        self.focus_set()
 
 class Create_db(Template):
     def __init__(self):
         super().__init__()
         self.init_create_db()
-        
+
     def init_create_db(self):
         self.title('Create database')
 
@@ -136,7 +143,7 @@ class Create_db(Template):
         btn_create.place(x=220, y=170)
         btn_create.bind('<Button-1>', lambda event: self.add_db(
             self.entry_name.get()))
-        
+
     def add_db(self, name):
         self.db.create_db(name)
 
@@ -180,7 +187,7 @@ class Connect(Template):
         btn_connect.place(x=220, y=170)
         btn_connect.bind('<Button-1>', lambda event: self.connect(
             self.entry_name.get()))
-        
+
     def connect(self, name):
         self.db.connect(name)
 
@@ -318,8 +325,41 @@ class Add_export(Template):
         label_author_name = tk.Label(self, text='Book ID:')
         label_author_name.place(x=50, y=70)
 
-        label_return_date = tk.Label(self, text='Return Date:')
-        label_return_date.place(x=50, y=95)
+        self.entry_date = ttk.Entry(self)
+        self.entry_date.place(x=200, y=20)
+
+        self.entry_reader_id = ttk.Entry(self)
+        self.entry_reader_id.place(x=200, y=45)
+
+        self.entry_book_id = ttk.Entry(self)
+        self.entry_book_id.place(x=200, y=70)
+
+        btn_ct = ttk.Button(self, text='Add export')
+        btn_ct.place(x=220, y=170)
+        btn_ct.bind('<Button-1>', lambda event: self.add_e(
+            self.entry_date.get(), self.entry_reader_id.get(),
+            self.entry_book_id.get(), ))
+
+    def add_e(self, date, reader_id, book_id):
+        self.db.query_add_export(date, reader_id, book_id)
+
+
+class Return_book(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_presence_export()
+        self.view = app
+
+    def init_presence_export(self):
+        self.title('Return book')
+        label_loaning_date = tk.Label(self, text='Return Date:')
+        label_loaning_date.place(x=50, y=20)
+
+        label_writing_year = tk.Label(self, text='Reader ID:')
+        label_writing_year.place(x=50, y=45)
+
+        label_author_name = tk.Label(self, text='Book ID:')
+        label_author_name.place(x=50, y=70)
 
         self.entry_date = ttk.Entry(self)
         self.entry_date.place(x=200, y=20)
@@ -330,17 +370,15 @@ class Add_export(Template):
         self.entry_book_id = ttk.Entry(self)
         self.entry_book_id.place(x=200, y=70)
 
-        self.entry_return_date = ttk.Entry(self)
-        self.entry_return_date.place(x=200, y=95)
-
-        btn_ct = ttk.Button(self, text='Add export')
+        btn_ct = ttk.Button(self, text='Return book')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_e(
             self.entry_date.get(), self.entry_reader_id.get(),
-            self.entry_book_id.get(), self.entry_return_date.get(), ))
+            self.entry_book_id.get(), ))
 
-    def add_e(self, date, reader_id, book_id, return_date):
-        self.db.query_add_export(date, reader_id, book_id, return_date)
+    def add_e(self, date, reader_id, book_id):
+        self.db.return_book(date, reader_id, book_id)
+
 
 class Print_table(Template):
     def __init__(self):
@@ -433,6 +471,8 @@ class DB:
         try:
             self.cur.execute("CALL create_tables();")
             self.cur.execute("{}".format(filling_labrary_table()))  # Создаем процедуру для заполнения таблиц
+            self.cur.execute("{}".format(add_export()))
+            self.cur.execute("{}".format(presence_export()))
             print("CREATED!")
             self.con.commit()
         except:
@@ -484,12 +524,18 @@ class DB:
         print("READER ADDED!")
         self.con.commit()
 
-    def query_add_export(self, date, reader_id, book_id, return_date):
-        self.cur.execute('CALL add_export(%s, %s, %s, %s);',
-                         (date, reader_id, book_id, return_date))
+    def query_add_export(self, date, reader_id, book_id):
+        self.cur.execute('CALL add_export(%s, %s, %s);',
+                         (date, reader_id, book_id))
         print("EXPORT ADDED!")
         self.con.commit()
 
+    def return_book(self, date, reader_id, book_id):
+        self.cur.execute('CALL presence_export(%s, %s, %s);',
+                         (date, reader_id, book_id))
+        print("BOOK RETURNED!")
+
+        self.con.commit()
     def query_find_book(self, name):
         table = psql.read_sql("SELECT * FROM show_book('{}')".format(name), self.con)
         print(table)
