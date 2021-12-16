@@ -290,7 +290,7 @@ class Delete_key_word(Template):
         self.label_table_name.place(x=200, y=20)
 
         temp_button = tk.Button(self, text='Choose', command=self.choose_key_word, bg='#d7d8e0', bd=3)
-        temp_button.grid(column=5, row=0)
+        temp_button.place(x=280, y=50)
 
         btn_ct = ttk.Button(self, text='Delete')
         btn_ct.place(x=220, y=170)
@@ -301,34 +301,34 @@ class Delete_key_word(Template):
         if self.label_table_name.get() == 'book':
             self.title('Choose book')
             label = tk.Label(self, text='Title book:')
-            label.place(x=50, y=45)
+            label.place(x=50, y=95)
 
             self.label = ttk.Entry(self)
-            self.label.place(x=200, y=45)
+            self.label.place(x=200, y=95)
             
         elif self.label_table_name.get() == 'author':
             self.title('Choose surname')
             label = tk.Label(self, text='Author surname:')
-            label.place(x=50, y=45)
+            label.place(x=50, y=95)
 
             self.label = ttk.Entry(self)
-            self.label.place(x=200, y=45)
+            self.label.place(x=200, y=95)
             
         elif self.label_table_name.get() == 'reader':
             self.title('Choose name')
             label = tk.Label(self, text='Reader name:')
-            label.place(x=50, y=45)
+            label.place(x=50, y=95)
 
             self.label = ttk.Entry(self)
-            self.label.place(x=200, y=45)
+            self.label.place(x=200, y=95)
             
         elif self.label_table_name.get() == 'export':
             self.title('Choose loaning date')
             label = tk.Label(self, text='Loaning date:')
-            label.place(x=50, y=45)
+            label.place(x=50, y=95)
 
             self.label = ttk.Entry(self)
-            self.label.place(x=200, y=45)
+            self.label.place(x=200, y=95)
 
     def delete_kw(self, t_name, key_word):
         self.db.procedure_delete_kw(t_name, key_word)

@@ -252,15 +252,7 @@ def delete_by_key_word():
     LANGUAGE plpgsql
     AS $$
     BEGIN
-        IF n_table = 'book' THEN
-            DELETE FROM book WHERE title = key_word;
-        ELSIF n_table = 'author' THEN
-            DELETE FROM author WHERE surname = key_word;
-        ELSIF n_table = 'reader' THEN
-            DELETE FROM reader WHERE reader.name = key_word;
-        ELSIF n_table = 'export' THEN
-            DELETE FROM export WHERE loaning_date = key_word;
-        END IF;
+        DELETE FROM book WHERE title = key_word;
     END
     $$;
     """
