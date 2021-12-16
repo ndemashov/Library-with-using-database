@@ -223,3 +223,24 @@ AS $$
 	update book set presence = true where id = b;
 $$;
     """
+
+def clear_table():
+    return """
+    CREATE OR REPLACE PROCEDURE clear_table( t_name varchar(20) )
+    LANGUAGE plpgsql
+    AS $$
+        DECLARE
+	tbl text;
+    BEGIN
+	IF t_name = 'ALL' THEN
+		FOR tbl IN 
+			SELECT table_name FROM information_schema.tables WHERE table_schema='public'
+		LOOP
+  			EXECUTE format('TRUNCATE TABLE %I CASCADE', tbl);
+		END LOOP;
+	ELSE	
+    	EXECUTE format('TRUNCATE TABLE %I CASCADE', t_name);
+	END IF;
+    END
+    $$;
+    """

@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pandas as pd
 import pandas.io.sql as psql
-from procedure import create_library_tabel, delete_library_table, filling_labrary_table, add_export, presence_export
+from procedure import clear_table, create_library_tabel, delete_library_table, filling_labrary_table, add_export, presence_export
 
 
 class Main(tk.Frame):
@@ -70,6 +70,10 @@ class Main(tk.Frame):
                                  compound=tk.TOP)
         btn_find_book.pack(side=tk.LEFT)
 
+        btn_cleare_tables = tk.Button(toolbar, text='Clear tables', command=self.clear_tables, bg='#d7d8e0', bd=3,
+                                 compound=tk.TOP)
+        btn_cleare_tables.pack(side=tk.LEFT)
+
 
     def create_db(self):
         Create_db()
@@ -109,6 +113,9 @@ class Main(tk.Frame):
 
     def find_book(self):
         Find_book()
+
+    def clear_tables(self):
+        Clear_tables()
 
 class Template(tk.Toplevel):
      def __init__(self):
@@ -424,11 +431,33 @@ class Find_book(Template):
     def find_book(self, name):
         self.db.query_find_book(name)
 
+class Clear_tables(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_find_book()
+
+    def init_find_book(self):
+        self.title('Clear_tables')
+
+        label_name = tk.Label(self, text='Table:')
+        label_name.place(x=50, y=20)
+
+        self.entry_name = ttk.Entry(self)
+        self.entry_name.place(x=100, y=20)
+
+        btn_connect = ttk.Button(self, text='Cleare')
+        btn_connect.place(x=220, y=170)
+        btn_connect.bind('<Button-1>', lambda event: self.clear_tables(
+            self.entry_name.get()))
+
+    def clear_tables(self, name):
+        self.db.procedure_clear_tables(name)
+
 class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="22001",
+            password="123",
             host="127.0.0.1",
             port="5432"
         )
@@ -450,9 +479,9 @@ class DB:
 
     def connect(self, name):
         self.con = psycopg2.connect(
-            user="postgres",
+            user="lib",
             database=name,
-            password="22001",
+            password="lib1234",
             host="127.0.0.1",
             port="5432"
         )
@@ -461,6 +490,7 @@ class DB:
         # При подключении к БД(любой) автоматически создаются процедуры для создания и удаления наших таблиц
         self.cur.execute("{}".format(create_library_tabel()))
         self.cur.execute("{}".format(delete_library_table()))
+        self.cur.execute("{}".format(clear_table()))
         print("proc created")
         self.con.commit()
 
@@ -536,10 +566,21 @@ class DB:
         print("BOOK RETURNED!")
 
         self.con.commit()
+
     def query_find_book(self, name):
         table = psql.read_sql("SELECT * FROM show_book('{}')".format(name), self.con)
         print(table)
 
+    def procedure_clear_tables(self, name):
+        try:
+            self.cur.execute('CALL clear_table(%s);',
+                            (name,))
+            if(name == "ALL"):
+                print("ALL TABLES CLEAR!")
+            else:        
+                print("TABLE " + name + " CLEAR!")
+        except:
+            print("There is no table " + name)
 
 if __name__ == "__main__":
     root = tk.Tk()
