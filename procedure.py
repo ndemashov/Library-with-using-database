@@ -8,7 +8,7 @@ def create_library_tabel():
         surname VARCHAR(20) NOT NULL,
         name VARCHAR(20) NOT NULL,
         patronymic VARCHAR(20),
-        amount_book INT NOT NULL,
+        amount_book INT NOT NULL DEFAULT 0,
         PRIMARY KEY(id)
     );
 
@@ -62,7 +62,7 @@ $$;
     $$;
     
     CREATE OR REPLACE FUNCTION print_author()
-    RETURNS TABLE(id integer, name varchar(20), surname varchar(20), patronymic varchar(20), amount_book integer )
+    RETURNS TABLE(id integer, surname varchar(20), name varchar(20), patronymic varchar(20), amount_book integer )
     LANGUAGE plpgsql
     AS $$
     DECLARE
@@ -126,16 +126,16 @@ def filling_labrary_table():
         CREATE OR REPLACE PROCEDURE filling_tables()
         LANGUAGE SQL
         AS $$
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Горький', 'Максим', NULL, 3);
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Достоевский', 'Фёдор', 'Михайлович', 4); 
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Толстой', 'Лев', 'Николаевич', 3); 
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Бунин', 'Иван', 'Алексеевич', 2);  
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Гоголь', 'Николай', 'Васильевич', 4);  
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Некрасов', 'Николай', 'Алексеевич', 3); 
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Чехов', 'Антон', 'Павлович', 4); 
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Булгаков', 'Михаил', 'Афанасьефич', 2);  
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Пушкин', 'Александр', 'Сергеевич', 5);  
-            INSERT INTO author (surname, name, patronymic, amount_book) VALUES ('Лермонтов', 'Михаил', 'Юрьевич', 4); 
+            INSERT INTO author (surname, name, patronymic) VALUES ('Горький', 'Максим', NULL);
+            INSERT INTO author (surname, name, patronymic) VALUES ('Достоевский', 'Фёдор', 'Михайлович'); 
+            INSERT INTO author (surname, name, patronymic) VALUES ('Толстой', 'Лев', 'Николаевич'); 
+            INSERT INTO author (surname, name, patronymic) VALUES ('Бунин', 'Иван', 'Алексеевич');  
+            INSERT INTO author (surname, name, patronymic) VALUES ('Гоголь', 'Николай', 'Васильевич');  
+            INSERT INTO author (surname, name, patronymic) VALUES ('Некрасов', 'Николай', 'Алексеевич'); 
+            INSERT INTO author (surname, name, patronymic) VALUES ('Чехов', 'Антон', 'Павлович'); 
+            INSERT INTO author (surname, name, patronymic) VALUES ('Булгаков', 'Михаил', 'Афанасьефич');  
+            INSERT INTO author (surname, name, patronymic) VALUES ('Пушкин', 'Александр', 'Сергеевич');  
+            INSERT INTO author (surname, name, patronymic) VALUES ('Лермонтов', 'Михаил', 'Юрьевич'); 
             
             
             INSERT INTO book (title, writing_year, author, release_year) VALUES ('Вишневый сад', 1903, 7, 1968); 
@@ -203,3 +203,64 @@ def filling_labrary_table():
             INSERT INTO phone (reader_id, phone) VALUES (10, 6755454);
 $$;
         """
+def add_library_book():
+    return """
+    CREATE OR REPLACE PROCEDURE add_book(b_title varchar(50),
+                                    b_writing_year INT,
+                                    b_release_year INT,
+                                    a_surname varchar(20),
+                                    a_name varchar(20),
+                                    a_patronymic varchar(20) DEFAULT NULL)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+	id_author author.id%type;
+BEGIN
+
+    IF NOT EXISTS (SELECT surname, name, patronymic FROM author
+    WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic)
+    THEN
+	INSERT INTO author (surname, name, patronymic) VALUES (a_surname, a_name, a_patronymic);
+
+	IF a_patronymic <> NULL THEN
+		SELECT id FROM author INTO id_author
+		WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
+	ELSE
+		SELECT id FROM author INTO id_author
+		WHERE surname = a_surname AND name = a_name;
+	END IF;
+
+	INSERT INTO book (title, writing_year, author, release_year) VALUES (b_title, b_writing_year, id_author, b_release_year);
+
+	ELSE
+		IF a_patronymic <> NULL THEN
+			SELECT id FROM author INTO id_author
+			WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
+		ELSE
+			SELECT id FROM author INTO id_author
+			WHERE surname = a_surname AND name = a_name;
+		END IF;
+		INSERT INTO book (title, writing_year, author, release_year) VALUES (b_title, b_writing_year, id_author, b_release_year);
+    END IF;
+END
+$$;
+    """
+def delete_by_key_word():
+    return """
+    CREATE OR REPLACE PROCEDURE delete_key_word(n_table VARCHAR (10), 
+											key_word VARCHAR (50))
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+        IF n_table = 'book' THEN
+            DELETE FROM book WHERE title = key_word;
+        ELSIF n_table = 'author' THEN
+            DELETE FROM author WHERE surname = key_word;
+        ELSIF n_table = 'reader' THEN
+            DELETE FROM reader WHERE reader.name = key_word;
+        ELSIF n_table = 'export' THEN
+            DELETE FROM export WHERE loaning_date = key_word;
+        END IF;
+    END
+    $$;
+    """
