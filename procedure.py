@@ -8,16 +8,17 @@ def create_library_tabel():
         surname VARCHAR(20) NOT NULL,
         name VARCHAR(20) NOT NULL,
         patronymic VARCHAR(20),
-        amount_book INT,
+        amount_book INT NOT NULL,
         PRIMARY KEY(id)
     );
 
     CREATE TABLE book(
         id SERIAL,
         title VARCHAR(50) NOT NULL,
-        writing_year INT CHECK (writing_year<=2022),
+        writing_year INT NOT NULL CHECK (writing_year<=2022),
         author INT NOT NULL,
-        release_year INT NOT NULL,
+        release_year INT NOT NULL CHECK (release_year<=2022),
+        presence bool DEFAULT TRUE,
         PRIMARY KEY(id),
         FOREIGN KEY (author) REFERENCES author(id)
     );
@@ -140,11 +141,5 @@ def filling_labrary_table():
             INSERT INTO phone (reader_id, phone) VALUES (8, 5344544);
             INSERT INTO phone (reader_id, phone) VALUES (9, 4333453);
             INSERT INTO phone (reader_id, phone) VALUES (10, 6755454);
-            
-            INSERT INTO export (reader, book, loaning_date, return_date, presence) VALUES (1, 3, '14.12.2012', NULL, FALSE);
-            INSERT INTO export (reader, book, loaning_date, return_date, presence) VALUES (1, 5, '14.12.2012', NULL, FALSE);
-            INSERT INTO export (reader, book, loaning_date, return_date, presence) VALUES (1, 6, '14.12.2012', NULL, FALSE);
-            INSERT INTO export (reader, book, loaning_date, return_date, presence) VALUES (3, 7, '14.12.2012', NULL, FALSE);
-            INSERT INTO export (reader, book, loaning_date, return_date, presence) VALUES (2, 9, '14.12.2012', NULL, FALSE);
 $$;
         """
