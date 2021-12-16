@@ -48,17 +48,77 @@ def create_library_tabel():
         FOREIGN KEY (reader) REFERENCES reader(id)
     );
 $$;
+
+ CREATE OR REPLACE FUNCTION print_book()
+    RETURNS TABLE(id integer, title VARCHAR(20), writing_year INT, author INT, release_year INT, presence bool)
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+    BEGIN
+    return query(
+	    SELECT * FROM book
+	);
+    END
+    $$;
+    
+    CREATE OR REPLACE FUNCTION print_author()
+    RETURNS TABLE(id integer, name varchar(20), surname varchar(20), patronymic varchar(20), amount_book integer )
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+    BEGIN
+    return query(
+	    SELECT * FROM author
+	);
+    END
+    $$;
+    
+    CREATE OR REPLACE FUNCTION print_reader()
+    RETURNS TABLE(id integer, sname VARCHAR(20), name VARCHAR(20), patronymic VARCHAR(20))
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+    BEGIN
+    return query(
+	    SELECT * FROM reader
+	);
+    END
+    $$;
+    
+    CREATE OR REPLACE FUNCTION print_phone()
+    RETURNS TABLE(reader_id integer, phone integer)
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+    BEGIN
+    return query(
+	    SELECT * FROM phone
+	);
+    END
+    $$;
+    
+    CREATE OR REPLACE FUNCTION print_export()
+    RETURNS TABLE(reader INT, book INT, loaning_date date, return_date date, presence bool)
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+    BEGIN
+    return query(
+	    SELECT * FROM export
+	);
+    END
+    $$;
     """
 def delete_library_table():
     return """
     CREATE OR REPLACE PROCEDURE delete_tables()
     LANGUAGE SQL
     AS $$
-     DROP TABLE author CASCADE;
-     DROP TABLE book CASCADE;
-     DROP TABLE reader CASCADE;
-     DROP TABLE phone CASCADE;
-     DROP TABLE export CASCADE;
+     DROP TABLE IF EXISTS author CASCADE;
+     DROP TABLE IF EXISTS book CASCADE;
+     DROP TABLE IF EXISTS reader CASCADE;
+     DROP TABLE IF EXISTS phone CASCADE;
+     DROP TABLE IF EXISTS export CASCADE;
 $$;
     """
 def filling_labrary_table():
