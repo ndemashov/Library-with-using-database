@@ -217,11 +217,12 @@ $$;
 def delete_by_key_word():
     return """
     CREATE OR REPLACE PROCEDURE delete_key_word(n_table VARCHAR (10), 
-											key_word VARCHAR (50))
+                                                field VARCHAR (10),
+											    key_word VARCHAR (50))
     LANGUAGE plpgsql
     AS $$
     BEGIN
-        DELETE FROM book WHERE title = key_word;
+		EXECUTE format('DELETE FROM %I CASCADE WHERE %I = $1;', n_table, field) USING key_word;
     END
     $$;    
     """

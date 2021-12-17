@@ -315,7 +315,7 @@ class Delete_key_word(Template):
         btn_ct = ttk.Button(self, text='Delete')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.delete_kw(
-            self.label_table_name.get(), self.label.get()))
+            self.label_table_name.get(), self.field, self.label.get(), ))
     
     def choose_key_word(self):
         if self.label_table_name.get() == 'book':
@@ -325,6 +325,8 @@ class Delete_key_word(Template):
 
             self.label = ttk.Entry(self)
             self.label.place(x=200, y=95)
+
+            self.field = 'title'
             
         elif self.label_table_name.get() == 'author':
             self.title('Choose surname')
@@ -333,6 +335,9 @@ class Delete_key_word(Template):
 
             self.label = ttk.Entry(self)
             self.label.place(x=200, y=95)
+
+            self.field = 'surname'
+
             
         elif self.label_table_name.get() == 'reader':
             self.title('Choose name')
@@ -341,7 +346,9 @@ class Delete_key_word(Template):
 
             self.label = ttk.Entry(self)
             self.label.place(x=200, y=95)
-            
+
+            self.field = 'name'
+
         elif self.label_table_name.get() == 'export':
             self.title('Choose loaning date')
             label = tk.Label(self, text='Loaning date:')
@@ -350,8 +357,10 @@ class Delete_key_word(Template):
             self.label = ttk.Entry(self)
             self.label.place(x=200, y=95)
 
-    def delete_kw(self, t_name, key_word):
-        self.db.procedure_delete_kw(t_name, key_word)
+            self.field = 'loaning_date'
+
+    def delete_kw(self, t_name, field, key_word):
+        self.db.procedure_delete_kw(t_name, field, key_word)
 
 class Add_reader(Template):
     def __init__(self):
@@ -556,7 +565,7 @@ class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="123",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )
@@ -578,9 +587,9 @@ class DB:
 
     def connect(self, name):
         self.con = psycopg2.connect(
-            user="lib",
+            user="postgres",
             database=name,
-            password="lib1234",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )
@@ -636,9 +645,9 @@ class DB:
         print("BOOK ADDED!")
         self.con.commit()
 
-    def procedure_delete_kw(self, t_name, key_word):
-        self.cur.execute('CALL delete_key_word(%s, %s);',
-                         (t_name, key_word))
+    def procedure_delete_kw(self, t_name, field, key_word):
+        self.cur.execute('CALL delete_key_word(%s, %s, %s);',
+                         (t_name, field, key_word))
         print("DELETED!")
         self.con.commit()
 
@@ -703,6 +712,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Library")
-    root.geometry("1650x150+300+200")
+    root.geometry("1850x150+300+200")
     root.resizable(False, False)
     root.mainloop()
