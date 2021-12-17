@@ -4,8 +4,8 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pandas as pd
 import pandas.io.sql as psql
-from procedure import clear_table, create_library_tabel, delete_library_table, filling_labrary_table, add_export, presence_export
-
+from procedure import create_library_tabel, delete_library_table, filling_labrary_table, add_library_book, delete_by_key_word
+from function import trigger_function, trigger
 
 class Main(tk.Frame):
     def __init__(self, root):
@@ -49,6 +49,10 @@ class Main(tk.Frame):
         btn_add_book = tk.Button(toolbar, text='Add book', command=self.add_book, bg='#d7d8e0', bd=3,
                                   compound=tk.TOP)
         btn_add_book.pack(side=tk.LEFT)
+
+        btn_dbk = tk.Button(toolbar, text='DeleteKW', command=self.delete_key_word, bg='#d7d8e0', bd=3,
+                                  compound=tk.TOP)
+        btn_dbk.pack(side=tk.LEFT)
 
         btn_add_reader = tk.Button(toolbar, text='Add reader', command=self.add_reader, bg='#d7d8e0', bd=3,
                                  compound=tk.TOP)
@@ -98,6 +102,9 @@ class Main(tk.Frame):
 
     def add_book(self):
         Add_book()
+
+    def delete_key_word(self):
+        Delete_key_word()
 
     def add_reader(self):
         Add_reader()
@@ -239,14 +246,17 @@ class Add_book(Template):
         label_writing_year = tk.Label(self, text='Writing year:')
         label_writing_year.place(x=50, y=45)
 
-        label_author_name = tk.Label(self, text='Author Surname:')
-        label_author_name.place(x=50, y=70)
+        label_release_year = tk.Label(self, text='Release year:')
+        label_release_year.place(x=50, y=70)
 
-        label_author_surname = tk.Label(self, text='Author name:')
+        label_author_surname = tk.Label(self, text='Author surname:')
         label_author_surname.place(x=50, y=95)
 
+        label_author_name = tk.Label(self, text='Author name:')
+        label_author_name.place(x=50, y=120)
+
         label_num_book = tk.Label(self, text='Author patronymic')
-        label_num_book.place(x=50, y=120)
+        label_num_book.place(x=50, y=145)
 
 
         self.entry_title = ttk.Entry(self)
@@ -255,24 +265,86 @@ class Add_book(Template):
         self.entry_writing_year = ttk.Entry(self)
         self.entry_writing_year.place(x=200, y=45)
 
+        self.entry_release_year = ttk.Entry(self)
+        self.entry_release_year.place(x=200, y=70)
+
         self.entry_author_surname = ttk.Entry(self)
-        self.entry_author_surname.place(x=200, y=70)
+        self.entry_author_surname.place(x=200, y=95)
 
         self.entry_author_name = ttk.Entry(self)
-        self.entry_author_name.place(x=200, y=95)
+        self.entry_author_name.place(x=200, y=120)
 
         self.entry_author_patronymic = ttk.Entry(self)
-        self.entry_author_patronymic.place(x=200, y=120)
+        self.entry_author_patronymic.place(x=200, y=145)
 
         btn_ct = ttk.Button(self, text='Add book')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_b(
         self.entry_title.get(), self.entry_writing_year.get(),
-        self.entry_author_name.get(), self.entry_author_surname.get(),
-        self.entry_author_patronymic.get(), ))
+        self.entry_release_year.get(), self.entry_author_surname.get(),
+        self.entry_author_name.get(), self.entry_author_patronymic.get(), ))
 
-    def add_b(self, title, writing_year, author_name, author_surname, author_patronymic):
-        self.db.query_add_book(title, writing_year, author_name, author_surname, author_patronymic)
+    def add_b(self, title, writing_year, release_year, author_surname, author_name, author_patronymic):
+        self.db.procedure_add_book(title, writing_year, release_year, author_surname, author_name, author_patronymic)
+
+class Delete_key_word(Template):
+    
+    def __init__(self):
+        super().__init__()
+        self.init_delete_key_word()
+        self.view = app
+
+    def init_delete_key_word(self):
+        self.title('Delete by word')
+        label_table_name = tk.Label(self, text='Table Name:')
+        label_table_name.place(x=50, y=20)
+
+        self.label_table_name = ttk.Entry(self)
+        self.label_table_name.place(x=200, y=20)
+
+        temp_button = tk.Button(self, text='Choose', command=self.choose_key_word, bg='#d7d8e0', bd=3)
+        temp_button.place(x=280, y=50)
+
+        btn_ct = ttk.Button(self, text='Delete')
+        btn_ct.place(x=220, y=170)
+        btn_ct.bind('<Button-1>', lambda event: self.delete_kw(
+            self.label_table_name.get(), self.label.get()))
+    
+    def choose_key_word(self):
+        if self.label_table_name.get() == 'book':
+            self.title('Choose book')
+            label = tk.Label(self, text='Title book:')
+            label.place(x=50, y=95)
+
+            self.label = ttk.Entry(self)
+            self.label.place(x=200, y=95)
+            
+        elif self.label_table_name.get() == 'author':
+            self.title('Choose surname')
+            label = tk.Label(self, text='Author surname:')
+            label.place(x=50, y=95)
+
+            self.label = ttk.Entry(self)
+            self.label.place(x=200, y=95)
+            
+        elif self.label_table_name.get() == 'reader':
+            self.title('Choose name')
+            label = tk.Label(self, text='Reader name:')
+            label.place(x=50, y=95)
+
+            self.label = ttk.Entry(self)
+            self.label.place(x=200, y=95)
+            
+        elif self.label_table_name.get() == 'export':
+            self.title('Choose loaning date')
+            label = tk.Label(self, text='Loaning date:')
+            label.place(x=50, y=95)
+
+            self.label = ttk.Entry(self)
+            self.label.place(x=200, y=95)
+
+    def delete_kw(self, t_name, key_word):
+        self.db.procedure_delete_kw(t_name, key_word)
 
 class Add_reader(Template):
     def __init__(self):
@@ -457,7 +529,7 @@ class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="123",
+            password="12345",
             host="127.0.0.1",
             port="5432"
         )
@@ -500,6 +572,10 @@ class DB:
     def procedure_create_table(self):
         try:
             self.cur.execute("CALL create_tables();")
+            self.cur.execute("{}".format(trigger_function()))
+            self.cur.execute("{}".format(trigger()))
+            self.cur.execute("{}".format(add_library_book()))
+            self.cur.execute("{}".format(delete_by_key_word()))
             self.cur.execute("{}".format(filling_labrary_table()))  # Создаем процедуру для заполнения таблиц
             self.cur.execute("{}".format(add_export()))
             self.cur.execute("{}".format(presence_export()))
@@ -526,9 +602,15 @@ class DB:
         except:
             print("TABLE IS CREATED YET!")
 
-    def query_add_book(self, title, writing_year, author_surname, author_name, author_patronymic):
-        self.cur.execute('CALL add_book(%s, %s, %s, %s, %s);', (title, writing_year, author_surname, author_name, author_patronymic) )
+    def procedure_add_book(self, title, writing_year, release_year, author_surname, author_name, author_patronymic):
+        self.cur.execute('CALL add_book(%s, %s, %s, %s, %s, %s);', (title, writing_year, release_year, author_surname, author_name, author_patronymic) )
         print("BOOK ADDED!")
+        self.con.commit()
+
+    def procedure_delete_kw(self, t_name, key_word):
+        self.cur.execute('CALL delete_key_word(%s, %s);',
+                         (t_name, key_word))
+        print("DELETED!")
         self.con.commit()
 
     def print_table(self, name):
@@ -546,7 +628,6 @@ class DB:
             print(table)
         except:
             print("There is no table " + name)
-
 
     def query_add_reader(self, surname, name, patronymic, phone):
         self.cur.execute('CALL add_reader(%s, %s, %s, %s);',
