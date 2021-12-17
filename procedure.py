@@ -107,58 +107,41 @@ def filling_labrary_table():
         CREATE OR REPLACE PROCEDURE filling_tables()
         LANGUAGE SQL
         AS $$
-            INSERT INTO author (surname, name, patronymic) VALUES ('Горький', 'Максим', NULL);
-            INSERT INTO author (surname, name, patronymic) VALUES ('Достоевский', 'Фёдор', 'Михайлович'); 
-            INSERT INTO author (surname, name, patronymic) VALUES ('Толстой', 'Лев', 'Николаевич'); 
-            INSERT INTO author (surname, name, patronymic) VALUES ('Бунин', 'Иван', 'Алексеевич');  
-            INSERT INTO author (surname, name, patronymic) VALUES ('Гоголь', 'Николай', 'Васильевич');  
-            INSERT INTO author (surname, name, patronymic) VALUES ('Некрасов', 'Николай', 'Алексеевич'); 
-            INSERT INTO author (surname, name, patronymic) VALUES ('Чехов', 'Антон', 'Павлович'); 
-            INSERT INTO author (surname, name, patronymic) VALUES ('Булгаков', 'Михаил', 'Афанасьефич');  
-            INSERT INTO author (surname, name, patronymic) VALUES ('Пушкин', 'Александр', 'Сергеевич');  
-            INSERT INTO author (surname, name, patronymic) VALUES ('Лермонтов', 'Михаил', 'Юрьевич'); 
             
-            
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Вишневый сад', 1903, 7, 1968); 
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Темные аллеи', 1944, 4, 1977);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Война и мир', 1863, 3, 1984);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Дуэль', 1891, 7, 1967);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Мертвые души', 1841, 5, 1875);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('На Дне', 1901, 1, 1963);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Герои нашего времени', 1840, 10, 1965);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Мертвые души', 1841, 5, 1865);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Мать', 1898, 4, 1969);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Русские женщины', 1872, 6, 1995);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Евгений Онегин', 1833, 9, 1979);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Детство', 1913, 1, 1983);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Шинель', 1842, 5, 1874);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Демон', 1839, 10, 1955);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Преступление и наказание', 1866, 2, 1963);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Детство', 1852, 3, 1961);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Борис Годунов', 1831, 9, 1969);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Вишневый сад', 1903, 7, 1998); 
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Маленькие трагедии', 1830, 9, 1959);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Преступление и наказание', 1866, 2, 1983);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Крестьянские дети', 1861, 6, 1988);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Мастер и Маргарита', 1940, 8, 1999);
-
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Моцарт и Сальери', 1832, 9, 1989);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Идиот', 1869, 2, 1973);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('На охоте', 1884, 7, 1965); 
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Шинель', 1842, 5, 1865);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Кому на Руси жить хорошо', 1874, 6, 1975);
-
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Война и мир', 1863, 3, 1994);
-
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Скупой рыцарь', 1830, 9, 1985);
-
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Исповедь', 1831, 10, 1963);
-
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Мать', 1906, 1, 1972);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Мастер и Маргарита', 1940, 8, 1989);
-          
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Кавказец', 1841, 10, 1978);
-            INSERT INTO book (title, writing_year, author, release_year) VALUES ('Идиот', 1869, 2, 1993);
+            CALL add_book('Вишневый сад', 1903, 1968, 'Чехов', 'Антон', 'Павлович');
+            CALL add_book('Темные аллеи', 1944,  1977, 'Бунин', 'Иван', 'Алексеевич');
+            CALL add_book('Война и мир', 1863, 1984, 'Толстой', 'Лев', 'Николаевич');
+            CALL add_book('Дуэль', 1891, 1967, 'Чехов', 'Антон', 'Павлович');
+            CALL add_book('Мертвые души', 1841, 1875, 'Гоголь', 'Николай', 'Васильевич');
+            CALL add_book('На Дне', 1901, 1963, 'Пешков', 'Алексей', 'Максимович');
+            CALL add_book('Герои нашего времени', 1840, 1965, 'Лермонтов', 'Михаил', 'Юрьевич');
+            CALL add_book('Мертвые души', 1841, 1865, 'Гоголь', 'Николай', 'Васильевич');
+            CALL add_book('Мать', 1898, 1969, 'Бунин', 'Иван', 'Алексеевич');
+            CALL add_book('Русские женщины', 1872, 1995, 'Некрасов', 'Николай', 'Алексеевич');
+            CALL add_book('Евгений Онегин', 1833,1979, 'Пушкин', 'Александр', 'Сергеевич');
+            CALL add_book('Детство', 1913, 1983, 'Пешков', 'Алексей', 'Максимович');
+            CALL add_book('Шинель', 1842, 1874, 'Гоголь', 'Николай', 'Васильевич');
+            CALL add_book('Демон', 1839, 1955, 'Лермонтов', 'Михаил', 'Юрьевич');
+            CALL add_book('Преступление и наказание', 1866, 1963, 'Достоевский', 'Фёдор', 'Михайлович');
+            CALL add_book('Детство', 1852, 1961, 'Толстой', 'Лев', 'Николаевич');
+            CALL add_book('Борис Годунов', 1831, 1969, 'Пушкин', 'Александр', 'Сергеевич');
+            CALL add_book('Вишневый сад', 1903, 1998, 'Чехов', 'Антон', 'Павлович');
+            CALL add_book('Маленькие трагедии', 1830, 1959, 'Пушкин', 'Александр', 'Сергеевич');
+            CALL add_book('Преступление и наказание', 1866, 1983, 'Достоевский', 'Фёдор', 'Михайлович');
+            CALL add_book('Крестьянские дети', 1861, 1988, 'Некрасов', 'Николай', 'Алексеевич');
+            CALL add_book('Мастер и Маргарита', 1940, 1998, 'Булгаков', 'Михаил', 'Афанасьефич');
+            CALL add_book('Моцарт и Сальери', 1832, 1989, 'Пушкин', 'Александр', 'Сергеевич');
+            CALL add_book('Идиот', 1869, 1973, 'Достоевский', 'Фёдор', 'Михайлович');
+            CALL add_book('На охоте', 1884, 1965, 'Чехов', 'Антон', 'Павлович');
+            CALL add_book('Шинель', 1842, 1865, 'Гоголь', 'Николай', 'Васильевич');
+            CALL add_book('Кому на Руси жить хорошо', 1874, 1975, 'Некрасов', 'Николай', 'Алексеевич');
+            CALL add_book('Война и мир', 1863, 1994, 'Толстой', 'Лев', 'Николаевич');
+            CALL add_book('Скупой рыцарь', 1830, 1985, 'Пушкин', 'Александр', 'Сергеевич');
+            CALL add_book('Исповедь', 1831, 1963, 'Лермонтов', 'Михаил', 'Юрьевич');
+            CALL add_book('Мать', 1906, 1972, 'Пешков', 'Алексей', 'Максимович');
+            CALL add_book('Мастер и Маргарита', 1940, 1989, 'Булгаков', 'Михаил', 'Афанасьефич');
+            CALL add_book('Кавказец', 1841, 1978, 'Лермонтов', 'Михаил', 'Юрьевич');
+            CALL add_book('Идиот', 1869, 1993, 'Достоевский', 'Фёдор', 'Михайлович');
             
             INSERT INTO reader (surname, name, patronymic) VALUES ('Команов', 'Михаил', 'Александрович');
             INSERT INTO reader (surname, name, patronymic) VALUES ('Аратан', 'Кузьма', 'Вячеславович');
@@ -191,25 +174,15 @@ BEGIN
     THEN
 	INSERT INTO author (surname, name, patronymic) VALUES (a_surname, a_name, a_patronymic);
 
-	IF a_patronymic <> NULL THEN
-		SELECT id FROM author INTO id_author
-		WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
-	ELSE
-		SELECT id FROM author INTO id_author
-		WHERE surname = a_surname AND name = a_name;
-	END IF;
-
+	SELECT id FROM author INTO id_author
+	WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
+	
 	INSERT INTO book (title, writing_year, author, release_year) VALUES (b_title, b_writing_year, id_author, b_release_year);
 
 	ELSE
-		IF a_patronymic <> NULL THEN
-			SELECT id FROM author INTO id_author
-			WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
-		ELSE
-			SELECT id FROM author INTO id_author
-			WHERE surname = a_surname AND name = a_name;
-		END IF;
-		INSERT INTO book (title, writing_year, author, release_year) VALUES (b_title, b_writing_year, id_author, b_release_year);
+		SELECT id FROM author INTO id_author
+		WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
+	    INSERT INTO book (title, writing_year, author, release_year) VALUES (b_title, b_writing_year, id_author, b_release_year);
     END IF;
 END
 $$;
