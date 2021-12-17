@@ -259,3 +259,41 @@ def delete_entry():
 	END
 	$$;
     """
+def find_by_key_word():
+    return """
+    CREATE OR REPLACE FUNCTION find_key_word_from_author(key_word VARCHAR (50))
+	RETURNS TABLE(id integer, surname varchar(20), name varchar(20), patronymic varchar(20), amount_book integer )
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+		return query(SELECT * FROM author WHERE author.surname = $1);
+    END
+    $$;
+
+    CREATE OR REPLACE FUNCTION find_key_word_from_book(key_word VARCHAR (50))
+	RETURNS TABLE(id integer, title VARCHAR(20), writing_year INT, author INT, release_year INT, presence bool)
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+		return query(SELECT * FROM book WHERE book.title = $1);
+    END
+    $$;
+
+    CREATE OR REPLACE FUNCTION find_key_word_from_reader(key_word VARCHAR (50))
+	RETURNS TABLE(id integer, sname VARCHAR(20), name VARCHAR(20), patronymic VARCHAR(20))
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+		return query(SELECT * FROM reader WHERE reader.name = $1);
+    END
+    $$;
+
+    CREATE OR REPLACE FUNCTION find_key_word_from_export(key_word VARCHAR (50))
+	RETURNS TABLE(reader INT, book INT, loaning_date date, return_date date, presence bool )
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+		return query(SELECT * FROM export WHERE export.loaning_date = $1);
+    END
+    $$;
+    """    

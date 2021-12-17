@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pandas as pd
 import pandas.io.sql as psql
-from procedure import add_export, delete_entry, clear_table, presence_export, add_reader, create_library_tabel, delete_library_table, filling_labrary_table, add_library_book, delete_by_key_word
+from procedure import add_export, delete_entry, clear_table, find_by_key_word, presence_export, add_reader, create_library_tabel, delete_library_table, filling_labrary_table, add_library_book, delete_by_key_word
 from function import trigger_function, trigger
 
 class Main(tk.Frame):
@@ -50,7 +50,7 @@ class Main(tk.Frame):
                                   compound=tk.TOP)
         btn_add_book.pack(side=tk.LEFT)
 
-        btn_dbk = tk.Button(toolbar, text='DeleteKW', command=self.delete_key_word, bg='#d7d8e0', bd=3,
+        btn_dbk = tk.Button(toolbar, text='Action by KW', command=self.delete_key_word, bg='#d7d8e0', bd=3,
                                   compound=tk.TOP)
         btn_dbk.pack(side=tk.LEFT)
 
@@ -302,7 +302,7 @@ class Delete_key_word(Template):
         self.view = app
 
     def init_delete_key_word(self):
-        self.title('Delete by word')
+        self.title('Action by word')
         label_table_name = tk.Label(self, text='Table Name:')
         label_table_name.place(x=50, y=20)
 
@@ -314,8 +314,12 @@ class Delete_key_word(Template):
 
         btn_ct = ttk.Button(self, text='Delete')
         btn_ct.place(x=220, y=170)
+        btn_ct = ttk.Button(self, text='Find')
+        btn_ct.place(x=140, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.delete_kw(
             self.label_table_name.get(), self.field, self.label.get(), ))
+        btn_ct.bind('<Button-1>', lambda event: self.find_kw(
+            self.label_table_name.get(), self.label.get(), ))
     
     def choose_key_word(self):
         if self.label_table_name.get() == 'book':
@@ -361,6 +365,9 @@ class Delete_key_word(Template):
 
     def delete_kw(self, t_name, field, key_word):
         self.db.procedure_delete_kw(t_name, field, key_word)
+
+    def find_kw(self, t_name, key_word):
+        self.db.procedure_find_kw(t_name, key_word)
 
 class Add_reader(Template):
     def __init__(self):
@@ -432,7 +439,6 @@ class Add_export(Template):
     def add_e(self, date, reader_id, book_id):
         self.db.query_add_export(date, reader_id, book_id)
 
-
 class Return_book(Template):
     def __init__(self):
         super().__init__()
@@ -467,7 +473,6 @@ class Return_book(Template):
 
     def add_e(self, date, reader_id, book_id):
         self.db.return_book(date, reader_id, book_id)
-
 
 class Print_table(Template):
     def __init__(self):
@@ -565,7 +570,7 @@ class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="12345",
+            password="123",
             host="127.0.0.1",
             port="5432"
         )
@@ -587,9 +592,9 @@ class DB:
 
     def connect(self, name):
         self.con = psycopg2.connect(
-            user="postgres",
+            user="lib",
             database=name,
-            password="12345",
+            password="lib1234",
             host="127.0.0.1",
             port="5432"
         )
@@ -611,6 +616,7 @@ class DB:
             self.cur.execute("{}".format(trigger()))
             self.cur.execute("{}".format(add_library_book()))
             self.cur.execute("{}".format(delete_by_key_word()))
+            self.cur.execute("{}".format(find_by_key_word()))
             self.cur.execute("{}".format(filling_labrary_table()))  # Создаем процедуру для заполнения таблиц
             self.cur.execute("{}".format(add_export()))
             self.cur.execute("{}".format(presence_export()))
@@ -650,6 +656,14 @@ class DB:
                          (t_name, field, key_word))
         print("DELETED!")
         self.con.commit()
+
+    def procedure_find_kw(self, t_name, key_word):
+        try:
+            query = "SELECT * FROM find_key_word_from_" + t_name + "('" + key_word + "')"
+            table= psql.read_sql(query, self.con)
+            print(table)
+        except:
+            print("There is no table " + t_name + " or key " + key_word)
 
     def print_table(self, name):
         try:
