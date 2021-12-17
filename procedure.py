@@ -15,9 +15,9 @@ def create_library_tabel():
     CREATE TABLE book(
         id SERIAL,
         title VARCHAR(50) NOT NULL,
-        writing_year INT NOT NULL CHECK (writing_year<=2022),
+        writing_year INT CHECK (writing_year<=2022),
         author INT NOT NULL,
-        release_year INT NOT NULL CHECK (release_year<=2022),
+        release_year INT NOT NULL,
         presence bool DEFAULT TRUE,
         PRIMARY KEY(id),
         FOREIGN KEY (author) REFERENCES author(id)
@@ -253,6 +253,44 @@ def delete_by_key_word():
     AS $$
     BEGIN
         DELETE FROM book WHERE title = key_word;
+
+def add_export():
+    return """
+    CREATE OR REPLACE PROCEDURE add_export(d date, r int, b int)
+LANGUAGE SQL
+AS $$
+	INSERT INTO export (reader, book, loaning_date, presence) VALUES (r, b, d, false);
+	update book set presence = false where id = b;
+$$;
+    """
+
+def presence_export():
+    return """
+    CREATE OR REPLACE PROCEDURE presence_export(d date, r int, b int)
+LANGUAGE SQL
+AS $$
+	update export set return_date = d, presence = true where reader = r and book = b;
+	update book set presence = true where id = b;
+$$;
+    """
+
+def clear_table():
+    return """
+    CREATE OR REPLACE PROCEDURE clear_table( t_name varchar(20) )
+    LANGUAGE plpgsql
+    AS $$
+        DECLARE
+	tbl text;
+    BEGIN
+	IF t_name = 'ALL' THEN
+		FOR tbl IN 
+			SELECT table_name FROM information_schema.tables WHERE table_schema='public'
+		LOOP
+  			EXECUTE format('TRUNCATE TABLE %I CASCADE', tbl);
+		END LOOP;
+	ELSE	
+    	EXECUTE format('TRUNCATE TABLE %I CASCADE', t_name);
+	END IF;
     END
     $$;
     """
