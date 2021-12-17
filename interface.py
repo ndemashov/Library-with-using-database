@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import pandas as pd
 import pandas.io.sql as psql
-from procedure import create_library_tabel, delete_library_table, filling_labrary_table, add_library_book, delete_by_key_word
+from procedure import add_export, delete_entry, clear_table, presence_export, add_reader, create_library_tabel, delete_library_table, filling_labrary_table, add_library_book, delete_by_key_word
 from function import trigger_function, trigger
 
 class Main(tk.Frame):
@@ -78,6 +78,10 @@ class Main(tk.Frame):
                                  compound=tk.TOP)
         btn_cleare_tables.pack(side=tk.LEFT)
 
+        btn_cleare_tables = tk.Button(toolbar, text='Delete entry', command=self.delete_entry, bg='#d7d8e0', bd=3,
+                                 compound=tk.TOP)
+        btn_cleare_tables.pack(side=tk.LEFT)
+
 
     def create_db(self):
         Create_db()
@@ -123,6 +127,9 @@ class Main(tk.Frame):
 
     def clear_tables(self):
         Clear_tables()
+
+    def delete_entry(self):
+        Delete_entry()
 
 class Template(tk.Toplevel):
      def __init__(self):
@@ -363,9 +370,6 @@ class Add_reader(Template):
         label_author_name = tk.Label(self, text='Patronymic:')
         label_author_name.place(x=50, y=70)
 
-        label_author_surname = tk.Label(self, text='Phone:')
-        label_author_surname.place(x=50, y=95)
-
         self.entry_surname = ttk.Entry(self)
         self.entry_surname.place(x=200, y=20)
 
@@ -375,17 +379,14 @@ class Add_reader(Template):
         self.entry_patronymic = ttk.Entry(self)
         self.entry_patronymic.place(x=200, y=70)
 
-        self.entry_phone = ttk.Entry(self)
-        self.entry_phone.place(x=200, y=95)
-
         btn_ct = ttk.Button(self, text='Add reader')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_r(
         self.entry_surname.get(), self.entry_name.get(),
-        self.entry_patronymic.get(), self.entry_phone.get(), ))
+        self.entry_patronymic.get(), ))
 
-    def add_r(self, surname, name, patronymic, phone):
-        self.db.query_add_reader(surname, name, patronymic, phone)
+    def add_r(self, surname, name, patronymic):
+        self.db.query_add_reader(surname, name, patronymic)
 
 class Add_export(Template):
     def __init__(self):
@@ -509,7 +510,7 @@ class Clear_tables(Template):
         self.init_find_book()
 
     def init_find_book(self):
-        self.title('Clear_tables')
+        self.title('Clear tables')
 
         label_name = tk.Label(self, text='Table:')
         label_name.place(x=50, y=20)
@@ -525,11 +526,37 @@ class Clear_tables(Template):
     def clear_tables(self, name):
         self.db.procedure_clear_tables(name)
 
+class Delete_entry(Template):
+    def __init__(self):
+        super().__init__()
+        self.init_find_book()
+
+    def init_find_book(self):
+        self.title('Delete entry')
+
+        label_name = tk.Label(self, text='Table:')
+        label_name.place(x=50, y=20)
+        label_id = tk.Label(self, text='ID:')
+        label_id.place(x=50, y=45)
+
+        self.entry_name = ttk.Entry(self)
+        self.entry_name.place(x=100, y=20)
+        self.entry_id = ttk.Entry(self)
+        self.entry_id.place(x=100, y=45)
+
+        btn_connect = ttk.Button(self, text='Delete')
+        btn_connect.place(x=220, y=170)
+        btn_connect.bind('<Button-1>', lambda event: self.delete_entry(
+            self.entry_name.get(), self.entry_id.get()))
+
+    def delete_entry(self, name, id):
+        self.db.procedure_delete_entry(name, id)
+
 class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="12345",
+            password="123",
             host="127.0.0.1",
             port="5432"
         )
@@ -562,7 +589,6 @@ class DB:
         # При подключении к БД(любой) автоматически создаются процедуры для создания и удаления наших таблиц
         self.cur.execute("{}".format(create_library_tabel()))
         self.cur.execute("{}".format(delete_library_table()))
-        self.cur.execute("{}".format(clear_table()))
         print("proc created")
         self.con.commit()
 
@@ -579,6 +605,9 @@ class DB:
             self.cur.execute("{}".format(filling_labrary_table()))  # Создаем процедуру для заполнения таблиц
             self.cur.execute("{}".format(add_export()))
             self.cur.execute("{}".format(presence_export()))
+            self.cur.execute("{}".format(clear_table()))
+            self.cur.execute("{}".format(add_reader()))
+            self.cur.execute("{}".format(delete_entry()))
             print("CREATED!")
             self.con.commit()
         except:
@@ -623,15 +652,13 @@ class DB:
                 table= psql.read_sql("SELECT * FROM print_reader()", self.con)
             elif(name == 'export'):
                 table= psql.read_sql("SELECT * FROM print_export()", self.con)
-            elif (name == 'phone'):
-                table = psql.read_sql("SELECT * FROM print_phone()", self.con)
             print(table)
         except:
             print("There is no table " + name)
 
-    def query_add_reader(self, surname, name, patronymic, phone):
-        self.cur.execute('CALL add_reader(%s, %s, %s, %s);',
-                         (surname, name, patronymic, phone))
+    def query_add_reader(self, surname, name, patronymic):
+        self.cur.execute('CALL add_reader(%s, %s, %s);',
+                         (surname, name, patronymic))
         print("READER ADDED!")
         self.con.commit()
 
@@ -662,6 +689,13 @@ class DB:
                 print("TABLE " + name + " CLEAR!")
         except:
             print("There is no table " + name)
+    def procedure_delete_entry(self, name, id):
+        try:
+            self.cur.execute('CALL delete_entry(%s, %s);',
+                            (name, id))
+            print("ENTRY " + id + " FROM " + name + " DELETE!")      
+        except:
+            print("There is no " + id + " in " + name)       
 
 if __name__ == "__main__":
     root = tk.Tk()

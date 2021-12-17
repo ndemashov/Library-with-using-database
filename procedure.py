@@ -20,7 +20,7 @@ def create_library_tabel():
         release_year INT NOT NULL,
         presence bool DEFAULT TRUE,
         PRIMARY KEY(id),
-        FOREIGN KEY (author) REFERENCES author(id)
+        FOREIGN KEY (author) REFERENCES author(id) ON DELETE CASCADE
     );
     CREATE INDEX ON book (title);
 
@@ -31,12 +31,6 @@ def create_library_tabel():
         patronymic VARCHAR(20),
         PRIMARY KEY(id)
     );
-    
-    CREATE TABLE phone(
-        reader_id INT NOT NULL,
-        phone INT,
-        FOREIGN KEY (reader_id) REFERENCES reader(id)
-    );
 
     CREATE TABLE export(
         reader INT NOT NULL,
@@ -44,8 +38,8 @@ def create_library_tabel():
         loaning_date date NOT NULL,
         return_date date DEFAULT NULL,
         presence bool DEFAULT FALSE,
-        FOREIGN KEY (book) REFERENCES book(id),
-        FOREIGN KEY (reader) REFERENCES reader(id)
+        FOREIGN KEY (book) REFERENCES book(id) ON DELETE CASCADE,
+        FOREIGN KEY (reader) REFERENCES reader(id) ON DELETE CASCADE
     );
 $$;
 
@@ -85,18 +79,6 @@ $$;
     END
     $$;
     
-    CREATE OR REPLACE FUNCTION print_phone()
-    RETURNS TABLE(reader_id integer, phone integer)
-    LANGUAGE plpgsql
-    AS $$
-    DECLARE
-    BEGIN
-    return query(
-	    SELECT * FROM phone
-	);
-    END
-    $$;
-    
     CREATE OR REPLACE FUNCTION print_export()
     RETURNS TABLE(reader INT, book INT, loaning_date date, return_date date, presence bool)
     LANGUAGE plpgsql
@@ -117,7 +99,6 @@ def delete_library_table():
      DROP TABLE IF EXISTS author CASCADE;
      DROP TABLE IF EXISTS book CASCADE;
      DROP TABLE IF EXISTS reader CASCADE;
-     DROP TABLE IF EXISTS phone CASCADE;
      DROP TABLE IF EXISTS export CASCADE;
 $$;
     """
@@ -189,18 +170,6 @@ def filling_labrary_table():
             INSERT INTO reader (surname, name, patronymic) VALUES ('Горапик', 'Арарат', 'Тутанович');
             INSERT INTO reader (surname, name, patronymic) VALUES ('Зеленов', 'Михаил', 'Петрович');
             INSERT INTO reader (surname, name, patronymic) VALUES ('Найденов', 'Александр', 'Александрович');
-            
-            INSERT INTO phone (reader_id, phone) VALUES (1, 123413);
-            INSERT INTO phone (reader_id, phone) VALUES (1, 3483434);
-            INSERT INTO phone (reader_id, phone) VALUES (2, 456376);
-            INSERT INTO phone (reader_id, phone) VALUES (3, 543434);
-            INSERT INTO phone (reader_id, phone) VALUES (4, 5343453);
-            INSERT INTO phone (reader_id, phone) VALUES (5, 3435434);
-            INSERT INTO phone (reader_id, phone) VALUES (6, 5343446);
-            INSERT INTO phone (reader_id, phone) VALUES (7, 5346545);
-            INSERT INTO phone (reader_id, phone) VALUES (8, 5344544);
-            INSERT INTO phone (reader_id, phone) VALUES (9, 4333453);
-            INSERT INTO phone (reader_id, phone) VALUES (10, 6755454);
 $$;
         """
 def add_library_book():
@@ -253,25 +222,28 @@ def delete_by_key_word():
     AS $$
     BEGIN
         DELETE FROM book WHERE title = key_word;
+    END
+    $$;    
+    """
 
 def add_export():
     return """
     CREATE OR REPLACE PROCEDURE add_export(d date, r int, b int)
-LANGUAGE SQL
-AS $$
-	INSERT INTO export (reader, book, loaning_date, presence) VALUES (r, b, d, false);
-	update book set presence = false where id = b;
-$$;
+    LANGUAGE SQL
+    AS $$
+	    INSERT INTO export (reader, book, loaning_date, presence) VALUES (r, b, d, false);
+	    update book set presence = false where id = b;
+    $$;
     """
 
 def presence_export():
     return """
     CREATE OR REPLACE PROCEDURE presence_export(d date, r int, b int)
-LANGUAGE SQL
-AS $$
-	update export set return_date = d, presence = true where reader = r and book = b;
-	update book set presence = true where id = b;
-$$;
+    LANGUAGE SQL
+    AS $$
+	    update export set return_date = d, presence = true where reader = r and book = b;
+	    update book set presence = true where id = b;
+    $$;
     """
 
 def clear_table():
@@ -293,4 +265,23 @@ def clear_table():
 	END IF;
     END
     $$;
+    """
+
+def add_reader():
+    return """
+    CREATE OR REPLACE PROCEDURE add_reader(s varchar, n varchar, p varchar)
+    LANGUAGE SQL
+    AS $$
+	    INSERT INTO reader (surname, name, patronymic) VALUES(s, n, p)
+    $$;
+    """
+def delete_entry():
+    return """
+    CREATE OR REPLACE PROCEDURE delete_entry( t_name varchar(20), entry_id integer )
+    LANGUAGE plpgsql
+    AS $$
+	BEGIN
+		EXECUTE format('DELETE FROM %I CASCADE WHERE id = $1;', t_name) USING entry_id;
+	END
+	$$;
     """
