@@ -7,6 +7,7 @@ import pandas.io.sql as psql
 from procedure import add_export, delete_entry, clear_table, find_by_key_word, presence_export, add_reader, create_library_tabel, delete_library_table, filling_labrary_table, add_library_book, delete_by_key_word
 from function import trigger_function, trigger
 
+
 class Main(tk.Frame):
     def __init__(self, root):
         super().__init__(root)
@@ -30,15 +31,15 @@ class Main(tk.Frame):
         btn_connect.pack(side=tk.LEFT)
 
         btn_clt = tk.Button(toolbar, text='Create library tables', command=self.create_tables, bg='#d7d8e0', bd=3,
-                                  compound=tk.TOP)
+                            compound=tk.TOP)
         btn_clt.pack(side=tk.LEFT)
 
         btn_dlt = tk.Button(toolbar, text='Delete library tables', command=self.delete_tables, bg='#d7d8e0', bd=3,
-                                  compound=tk.TOP)
+                            compound=tk.TOP)
         btn_dlt.pack(side=tk.LEFT)
 
         btn_fill = tk.Button(toolbar, text='Filling tables', command=self.filling_tables, bg='#d7d8e0', bd=3,
-                            compound=tk.TOP)
+                             compound=tk.TOP)
         btn_fill.pack(side=tk.LEFT)
 
         btn_at = tk.Button(toolbar, text='Add table', command=self.add_table, bg='#d7d8e0',
@@ -47,15 +48,15 @@ class Main(tk.Frame):
         btn_at.pack(side=tk.LEFT)
 
         btn_add_book = tk.Button(toolbar, text='Add book', command=self.add_book, bg='#d7d8e0', bd=3,
-                                  compound=tk.TOP)
+                                 compound=tk.TOP)
         btn_add_book.pack(side=tk.LEFT)
 
         btn_dbk = tk.Button(toolbar, text='Action by KW', command=self.delete_key_word, bg='#d7d8e0', bd=3,
-                                  compound=tk.TOP)
+                            compound=tk.TOP)
         btn_dbk.pack(side=tk.LEFT)
 
         btn_add_reader = tk.Button(toolbar, text='Add reader', command=self.add_reader, bg='#d7d8e0', bd=3,
-                                 compound=tk.TOP)
+                                   compound=tk.TOP)
         btn_add_reader.pack(side=tk.LEFT)
 
         btn_add_export = tk.Button(toolbar, text='Add export', command=self.add_export, bg='#d7d8e0', bd=3,
@@ -63,25 +64,24 @@ class Main(tk.Frame):
         btn_add_export.pack(side=tk.LEFT)
 
         btn_return_book = tk.Button(toolbar, text='Return book', command=self.return_book, bg='#d7d8e0', bd=3,
-                                   compound=tk.TOP)
+                                    compound=tk.TOP)
         btn_return_book.pack(side=tk.LEFT)
 
         btn_print_tb = tk.Button(toolbar, text='Print table', command=self.print_table, bg='#d7d8e0', bd=3,
-                           compound=tk.TOP)
+                                 compound=tk.TOP)
         btn_print_tb.pack(side=tk.LEFT)
 
         btn_find_book = tk.Button(toolbar, text='Find book', command=self.find_book, bg='#d7d8e0', bd=3,
-                                 compound=tk.TOP)
+                                  compound=tk.TOP)
         btn_find_book.pack(side=tk.LEFT)
 
         btn_cleare_tables = tk.Button(toolbar, text='Clear tables', command=self.clear_tables, bg='#d7d8e0', bd=3,
-                                 compound=tk.TOP)
+                                      compound=tk.TOP)
         btn_cleare_tables.pack(side=tk.LEFT)
 
         btn_cleare_tables = tk.Button(toolbar, text='Delete entry', command=self.delete_entry, bg='#d7d8e0', bd=3,
-                                 compound=tk.TOP)
+                                      compound=tk.TOP)
         btn_cleare_tables.pack(side=tk.LEFT)
-
 
     def create_db(self):
         Create_db()
@@ -131,12 +131,14 @@ class Main(tk.Frame):
     def delete_entry(self):
         Delete_entry()
 
+
 class Template(tk.Toplevel):
-     def __init__(self):
+    def __init__(self):
         super().__init__(root)
         self.init_template()
         self.db = db
-     def init_template(self):
+
+    def init_template(self):
         self.geometry('400x220+400+300')
         self.resizable(False, False)
 
@@ -145,6 +147,7 @@ class Template(tk.Toplevel):
 
         self.grab_set()
         self.focus_set()
+
 
 class Create_db(Template):
     def __init__(self):
@@ -168,6 +171,7 @@ class Create_db(Template):
     def add_db(self, name):
         self.db.create_db(name)
 
+
 class Delete_db(Template):
     def __init__(self):
         super().__init__()
@@ -186,8 +190,10 @@ class Delete_db(Template):
         btn_delete.place(x=220, y=170)
         btn_delete.bind('<Button-1>', lambda event: self.del_db(
             self.entry_name.get()))
+
     def del_db(self, name):
         self.db.delete_db(name)
+
 
 class Connect(Template):
     def __init__(self):
@@ -211,6 +217,7 @@ class Connect(Template):
 
     def connect(self, name):
         self.db.connect(name)
+
 
 class Add_table(Template):
     def __init__(self):
@@ -239,6 +246,7 @@ class Add_table(Template):
     def add_tb(self, name, structure):
         self.db.add_table(name, structure)
 
+
 class Add_book(Template):
     def __init__(self):
         super().__init__()
@@ -265,7 +273,6 @@ class Add_book(Template):
         label_num_book = tk.Label(self, text='Author patronymic')
         label_num_book.place(x=50, y=145)
 
-
         self.entry_title = ttk.Entry(self)
         self.entry_title.place(x=200, y=20)
 
@@ -287,15 +294,16 @@ class Add_book(Template):
         btn_ct = ttk.Button(self, text='Add book')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_b(
-        self.entry_title.get(), self.entry_writing_year.get(),
-        self.entry_release_year.get(), self.entry_author_surname.get(),
-        self.entry_author_name.get(), self.entry_author_patronymic.get(), ))
+            self.entry_title.get(), self.entry_writing_year.get(),
+            self.entry_release_year.get(), self.entry_author_surname.get(),
+            self.entry_author_name.get(), self.entry_author_patronymic.get(), ))
 
     def add_b(self, title, writing_year, release_year, author_surname, author_name, author_patronymic):
         self.db.procedure_add_book(title, writing_year, release_year, author_surname, author_name, author_patronymic)
 
+
 class Delete_key_word(Template):
-    
+
     def __init__(self):
         super().__init__()
         self.init_delete_key_word()
@@ -314,13 +322,13 @@ class Delete_key_word(Template):
 
         btn_ct = ttk.Button(self, text='Delete')
         btn_ct.place(x=220, y=170)
-        btn_ct = ttk.Button(self, text='Find')
-        btn_ct.place(x=140, y=170)
+        btn_ct2 = ttk.Button(self, text='Find')
+        btn_ct2.place(x=140, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.delete_kw(
             self.label_table_name.get(), self.field, self.label.get(), ))
-        btn_ct.bind('<Button-1>', lambda event: self.find_kw(
+        btn_ct2.bind('<Button-1>', lambda event: self.find_kw(
             self.label_table_name.get(), self.label.get(), ))
-    
+
     def choose_key_word(self):
         if self.label_table_name.get() == 'book':
             self.title('Choose book')
@@ -331,7 +339,7 @@ class Delete_key_word(Template):
             self.label.place(x=200, y=95)
 
             self.field = 'title'
-            
+
         elif self.label_table_name.get() == 'author':
             self.title('Choose surname')
             label = tk.Label(self, text='Author surname:')
@@ -342,7 +350,7 @@ class Delete_key_word(Template):
 
             self.field = 'surname'
 
-            
+
         elif self.label_table_name.get() == 'reader':
             self.title('Choose name')
             label = tk.Label(self, text='Reader name:')
@@ -368,6 +376,7 @@ class Delete_key_word(Template):
 
     def find_kw(self, t_name, key_word):
         self.db.procedure_find_kw(t_name, key_word)
+
 
 class Add_reader(Template):
     def __init__(self):
@@ -398,11 +407,12 @@ class Add_reader(Template):
         btn_ct = ttk.Button(self, text='Add reader')
         btn_ct.place(x=220, y=170)
         btn_ct.bind('<Button-1>', lambda event: self.add_r(
-        self.entry_surname.get(), self.entry_name.get(),
-        self.entry_patronymic.get(), ))
+            self.entry_surname.get(), self.entry_name.get(),
+            self.entry_patronymic.get(), ))
 
     def add_r(self, surname, name, patronymic):
         self.db.query_add_reader(surname, name, patronymic)
+
 
 class Add_export(Template):
     def __init__(self):
@@ -439,6 +449,7 @@ class Add_export(Template):
     def add_e(self, date, reader_id, book_id):
         self.db.query_add_export(date, reader_id, book_id)
 
+
 class Return_book(Template):
     def __init__(self):
         super().__init__()
@@ -474,6 +485,7 @@ class Return_book(Template):
     def add_e(self, date, reader_id, book_id):
         self.db.return_book(date, reader_id, book_id)
 
+
 class Print_table(Template):
     def __init__(self):
         super().__init__()
@@ -495,6 +507,7 @@ class Print_table(Template):
 
     def print_table(self, name):
         self.db.print_table(name)
+
 
 class Find_book(Template):
     def __init__(self):
@@ -518,6 +531,7 @@ class Find_book(Template):
     def find_book(self, name):
         self.db.query_find_book(name)
 
+
 class Clear_tables(Template):
     def __init__(self):
         super().__init__()
@@ -539,6 +553,7 @@ class Clear_tables(Template):
 
     def clear_tables(self, name):
         self.db.procedure_clear_tables(name)
+
 
 class Delete_entry(Template):
     def __init__(self):
@@ -566,11 +581,12 @@ class Delete_entry(Template):
     def delete_entry(self, name, id):
         self.db.procedure_delete_entry(name, id)
 
+
 class DB:
     def __init__(self):
         self.con = psycopg2.connect(
             user="postgres",
-            password="123",
+            password="22001",
             host="127.0.0.1",
             port="5432"
         )
@@ -647,7 +663,8 @@ class DB:
             print("TABLE IS CREATED YET!")
 
     def procedure_add_book(self, title, writing_year, release_year, author_surname, author_name, author_patronymic):
-        self.cur.execute('CALL add_book(%s, %s, %s, %s, %s, %s);', (title, writing_year, release_year, author_surname, author_name, author_patronymic) )
+        self.cur.execute('CALL add_book(%s, %s, %s, %s, %s, %s);',
+                         (title, writing_year, release_year, author_surname, author_name, author_patronymic))
         print("BOOK ADDED!")
         self.con.commit()
 
@@ -660,21 +677,21 @@ class DB:
     def procedure_find_kw(self, t_name, key_word):
         try:
             query = "SELECT * FROM find_key_word_from_" + t_name + "('" + key_word + "')"
-            table= psql.read_sql(query, self.con)
+            table = psql.read_sql(query, self.con)
             print(table)
         except:
             print("There is no table " + t_name + " or key " + key_word)
 
     def print_table(self, name):
         try:
-            if(name == 'author'):
-                table= psql.read_sql("SELECT * FROM print_author()", self.con)
-            elif(name == 'book'):
-                table= psql.read_sql("SELECT * FROM print_book()", self.con)
-            elif(name == 'reader'):
-                table= psql.read_sql("SELECT * FROM print_reader()", self.con)
-            elif(name == 'export'):
-                table= psql.read_sql("SELECT * FROM print_export()", self.con)
+            if (name == 'author'):
+                table = psql.read_sql("SELECT * FROM print_author()", self.con)
+            elif (name == 'book'):
+                table = psql.read_sql("SELECT * FROM print_book()", self.con)
+            elif (name == 'reader'):
+                table = psql.read_sql("SELECT * FROM print_reader()", self.con)
+            elif (name == 'export'):
+                table = psql.read_sql("SELECT * FROM print_export()", self.con)
             print(table)
         except:
             print("There is no table " + name)
@@ -705,20 +722,22 @@ class DB:
     def procedure_clear_tables(self, name):
         try:
             self.cur.execute('CALL clear_table(%s);',
-                            (name,))
-            if(name == "ALL"):
+                             (name,))
+            if (name == "ALL"):
                 print("ALL TABLES CLEAR!")
-            else:        
+            else:
                 print("TABLE " + name + " CLEAR!")
         except:
             print("There is no table " + name)
+
     def procedure_delete_entry(self, name, id):
         try:
             self.cur.execute('CALL delete_entry(%s, %s);',
-                            (name, id))
-            print("ENTRY " + id + " FROM " + name + " DELETE!")      
+                             (name, id))
+            print("ENTRY " + id + " FROM " + name + " DELETE!")
         except:
-            print("There is no " + id + " in " + name)       
+            print("There is no " + id + " in " + name)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
