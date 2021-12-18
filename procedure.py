@@ -54,7 +54,7 @@ $$;
 	);
     END
     $$;
-    
+
     CREATE OR REPLACE FUNCTION print_author()
     RETURNS TABLE(id integer, surname varchar(20), name varchar(20), patronymic varchar(20), amount_book integer )
     LANGUAGE plpgsql
@@ -66,7 +66,7 @@ $$;
 	);
     END
     $$;
-    
+
     CREATE OR REPLACE FUNCTION print_reader()
     RETURNS TABLE(id integer, sname VARCHAR(20), name VARCHAR(20), patronymic VARCHAR(20))
     LANGUAGE plpgsql
@@ -78,7 +78,7 @@ $$;
 	);
     END
     $$;
-    
+
     CREATE OR REPLACE FUNCTION print_export()
     RETURNS TABLE(reader INT, book INT, loaning_date date, return_date date, presence bool)
     LANGUAGE plpgsql
@@ -91,6 +91,8 @@ $$;
     END
     $$;
     """
+
+
 def delete_library_table():
     return """
     CREATE OR REPLACE PROCEDURE delete_tables()
@@ -102,12 +104,14 @@ def delete_library_table():
      DROP TABLE IF EXISTS export CASCADE;
 $$;
     """
+
+
 def filling_labrary_table():
     return """
         CREATE OR REPLACE PROCEDURE filling_tables()
         LANGUAGE SQL
         AS $$
-            
+
             CALL add_book('Вишневый сад', 1903, 1968, 'Чехов', 'Антон', 'Павлович');
             CALL add_book('Темные аллеи', 1944,  1977, 'Бунин', 'Иван', 'Алексеевич');
             CALL add_book('Война и мир', 1863, 1984, 'Толстой', 'Лев', 'Николаевич');
@@ -142,7 +146,7 @@ def filling_labrary_table():
             CALL add_book('Мастер и Маргарита', 1940, 1989, 'Булгаков', 'Михаил', 'Афанасьефич');
             CALL add_book('Кавказец', 1841, 1978, 'Лермонтов', 'Михаил', 'Юрьевич');
             CALL add_book('Идиот', 1869, 1993, 'Достоевский', 'Фёдор', 'Михайлович');
-            
+
             INSERT INTO reader (surname, name, patronymic) VALUES ('Команов', 'Михаил', 'Александрович');
             INSERT INTO reader (surname, name, patronymic) VALUES ('Аратан', 'Кузьма', 'Вячеславович');
             INSERT INTO reader (surname, name, patronymic) VALUES ('Тамашнев', 'Тимофей', 'Петрович');
@@ -155,6 +159,8 @@ def filling_labrary_table():
             INSERT INTO reader (surname, name, patronymic) VALUES ('Найденов', 'Александр', 'Александрович');
 $$;
         """
+
+
 def add_library_book():
     return """
     CREATE OR REPLACE PROCEDURE add_book(b_title varchar(50),
@@ -176,7 +182,7 @@ BEGIN
 
 	SELECT id FROM author INTO id_author
 	WHERE surname = a_surname AND name = a_name AND patronymic = a_patronymic;
-	
+
 	INSERT INTO book (title, writing_year, author, release_year) VALUES (b_title, b_writing_year, id_author, b_release_year);
 
 	ELSE
@@ -187,6 +193,8 @@ BEGIN
 END
 $$;
     """
+
+
 def delete_by_key_word():
     return """
     CREATE OR REPLACE PROCEDURE delete_key_word(n_table VARCHAR (10), 
@@ -200,6 +208,7 @@ def delete_by_key_word():
     $$;    
     """
 
+
 def add_export():
     return """
     CREATE OR REPLACE PROCEDURE add_export(d date, r int, b int)
@@ -210,6 +219,7 @@ def add_export():
     $$;
     """
 
+
 def presence_export():
     return """
     CREATE OR REPLACE PROCEDURE presence_export(d date, r int, b int)
@@ -219,6 +229,7 @@ def presence_export():
 	    update book set presence = true where id = b;
     $$;
     """
+
 
 def clear_table():
     return """
@@ -241,6 +252,7 @@ def clear_table():
     $$;
     """
 
+
 def add_reader():
     return """
     CREATE OR REPLACE PROCEDURE add_reader(s varchar, n varchar, p varchar)
@@ -249,6 +261,8 @@ def add_reader():
 	    INSERT INTO reader (surname, name, patronymic) VALUES(s, n, p)
     $$;
     """
+
+
 def delete_entry():
     return """
     CREATE OR REPLACE PROCEDURE delete_entry( t_name varchar(20), entry_id integer )
@@ -259,6 +273,8 @@ def delete_entry():
 	END
 	$$;
     """
+
+
 def find_by_key_word():
     return """
     CREATE OR REPLACE FUNCTION find_key_word_from_author(key_word VARCHAR (50))
@@ -296,4 +312,17 @@ def find_by_key_word():
 		return query(SELECT * FROM export WHERE export.loaning_date = $1);
     END
     $$;
-    """    
+    
+    CREATE OR REPLACE FUNCTION show_book( b_title varchar(50) )
+RETURNS TABLE(title varchar(15), surname varchar(15), name varchar(15))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+return query(
+    SELECT book.title, author.surname, author.name FROM book
+	INNER JOIN author ON book.author = author.id
+	WHERE book.title = b_title
+    );
+END
+$$;
+    """
