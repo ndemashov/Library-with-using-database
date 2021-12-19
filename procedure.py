@@ -51,6 +51,7 @@ $$;
     BEGIN
     return query(
 	    SELECT * FROM book
+	    ORDER BY book.id
 	);
     END
     $$;
@@ -63,6 +64,8 @@ $$;
     BEGIN
     return query(
 	    SELECT * FROM author
+	    ORDER BY author.id
+	    
 	);
     END
     $$;
@@ -75,6 +78,8 @@ $$;
     BEGIN
     return query(
 	    SELECT * FROM reader
+	    ORDER BY reader.id
+
 	);
     END
     $$;
@@ -87,7 +92,8 @@ $$;
     BEGIN
     return query(
 	    SELECT * FROM export
-	);
+	    ORDER BY export.id
+);
     END
     $$;
     """
